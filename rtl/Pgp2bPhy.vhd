@@ -68,12 +68,14 @@ end Pgp2bPhy;
 
 architecture mapping of Pgp2bPhy is
 
-   constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(1 downto 0) := genAxiLiteConfig(2, PHY_BASE_ADDR_G, 16, 13);
+   constant NUM_AXIL_MASTERS_C : natural := 6;
 
-   signal phyReadMasters  : AxiLiteReadMasterArray(1 downto 0);
-   signal phyReadSlaves   : AxiLiteReadSlaveArray(1 downto 0);
-   signal phyWriteMasters : AxiLiteWriteMasterArray(1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(1 downto 0);
+   constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, PHY_BASE_ADDR_G, 20, 13);
+
+   signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
 
 
    signal pgpRxIn  : Pgp2bRxInArray(1 downto 0)  := (others => PGP2B_RX_IN_INIT_C);
@@ -155,7 +157,7 @@ begin
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
-         NUM_MASTER_SLOTS_G => 2,
+         NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
          MASTERS_CONFIG_G   => XBAR_CONFIG_C)
       port map (
          axiClk              => sysClk,
@@ -298,10 +300,58 @@ begin
             -- AXI-Lite Register Interface (axilClk domain)
             axilClk         => sysClk,
             axilRst         => sysRst,
-            axilReadMaster  => phyReadMasters(i),
-            axilReadSlave   => phyReadSlaves(i),
-            axilWriteMaster => phyWriteMasters(i),
-            axilWriteSlave  => phyWriteSlaves(i));
+            axilReadMaster  => phyReadMasters((3*i)+0),
+            axilReadSlave   => phyReadSlaves((3*i)+0),
+            axilWriteMaster => phyWriteMasters((3*i)+0),
+            axilWriteSlave  => phyWriteSlaves((3*i)+0));
+
+      -----------------------------
+      -- Monitor the PGP TX streams
+      -----------------------------
+      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
+         generic map(
+            TPD_G            => TPD_G,
+            COMMON_CLK_G     => false,
+            AXIS_CLK_FREQ_G  => 156.25E+6,
+            AXIS_NUM_SLOTS_G => 4,
+            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
+         port map(
+            -- AXIS Stream Interface
+            axisClk          => pgpClk,
+            axisRst          => pgpRst,
+            axisMasters      => pgpTxMasters(4*i+3 downto 4*i),
+            axisSlaves       => pgpTxSlaves(4*i+3 downto 4*i),
+            -- AXI lite slave port for register access
+            axilClk          => sysClk,
+            axilRst          => sysRst,
+            sAxilWriteMaster => phyWriteMasters((3*i)+1),
+            sAxilWriteSlave  => phyWriteSlaves((3*i)+1),
+            sAxilReadMaster  => phyReadMasters((3*i)+1),
+            sAxilReadSlave   => phyReadSlaves((3*i)+1));
+
+      -----------------------------
+      -- Monitor the PGP RX streams
+      -----------------------------
+      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
+         generic map(
+            TPD_G            => TPD_G,
+            COMMON_CLK_G     => false,
+            AXIS_CLK_FREQ_G  => 156.25E+6,
+            AXIS_NUM_SLOTS_G => 4,
+            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
+         port map(
+            -- AXIS Stream Interface
+            axisClk          => pgpClk,
+            axisRst          => pgpRst,
+            axisMasters      => pgpRxMasters(4*i+3 downto 4*i),
+            axisSlaves       => (others => AXI_STREAM_SLAVE_FORCE_C),  -- SLAVE_READY_EN_G=false
+            -- AXI lite slave port for register access
+            axilClk          => sysClk,
+            axilRst          => sysRst,
+            sAxilWriteMaster => phyWriteMasters((3*i)+2),
+            sAxilWriteSlave  => phyWriteSlaves((3*i)+2),
+            sAxilReadMaster  => phyReadMasters((3*i)+2),
+            sAxilReadSlave   => phyReadSlaves((3*i)+2));
 
    end generate GEN_VEC;
 

@@ -164,23 +164,28 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
+      -------------------------------------------------------------------------------
       axiSlaveRegister (axilEp, x"000", 0, v.enable(0));
       axiSlaveRegister (axilEp, x"004", 0, v.inv(0));
       axiSlaveRegister (axilEp, x"008", 0, v.trigMap(0));
       axiSlaveRegister (axilEp, x"00C", 0, v.ccCntSize(0));
       axiSlaveRegister (axilEp, x"010", 0, v.ccTrigMask(0));
+
       axiSlaveRegisterR(axilEp, x"0F4", 0, trigFreq(0));
       axiSlaveRegisterR(axilEp, x"0F8", 0, r.trigCnt(0));
       axiSlaveRegister (axilEp, x"0FC", 0, v.cntRst(0));
 
+      -------------------------------------------------------------------------------
       axiSlaveRegister (axilEp, x"100", 0, v.enable(1));
       axiSlaveRegister (axilEp, x"104", 0, v.inv(1));
       axiSlaveRegister (axilEp, x"108", 0, v.trigMap(1));
       axiSlaveRegister (axilEp, x"10C", 0, v.ccCntSize(1));
       axiSlaveRegister (axilEp, x"110", 0, v.ccTrigMask(1));
+
       axiSlaveRegisterR(axilEp, x"1F4", 0, trigFreq(1));
       axiSlaveRegisterR(axilEp, x"1F8", 0, r.trigCnt(1));
       axiSlaveRegister (axilEp, x"1FC", 0, v.cntRst(1));
+      -------------------------------------------------------------------------------
 
       -- Close out the transaction
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);

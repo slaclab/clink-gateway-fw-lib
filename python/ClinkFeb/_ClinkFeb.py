@@ -11,7 +11,7 @@
 
 import pyrogue as pr
 
-import surf.axi             as axiVer
+import surf.axi             as axi
 import surf.xilinx          as xil
 import surf.devices.cypress as prom
 import surf.devices.linear  as linear
@@ -66,8 +66,19 @@ class ClinkTrigCtrl(pr.Device):
             bitSize      = 16,
             mode         = "RW",
             units        = '1/125MHz',          
-        ))     
-
+        )) 
+        
+        self.add(pr.LinkVariable(
+            name         = "TrigPulseWidthMicrosec", 
+            description  = "TrigPulseWidth in microseconds",
+            mode         = "RW", 
+            units        = "microsec",
+            disp         = '{:0.3f}', 
+            dependencies = [self.TrigPulseWidth], 
+            linkedGet    = lambda: (float(self.TrigPulseWidth.value()+1) * 0.008),
+            linkedSet    = lambda value, write: self.TrigPulseWidth.set(int(value/0.008)-1),
+        ))        
+        
         self.add(pr.RemoteVariable(    
             name         = "TrigMask",
             description  = "Sets the trigger mask on the 4-bit camCtrl bus",
@@ -123,7 +134,7 @@ class ClinkFeb(pr.Device):
         super().__init__(name=name, description=description, **kwargs) 
 
         # Add devices
-        self.add(axiVer.AxiVersion( 
+        self.add(axi.AxiVersion( 
             name        = 'AxiVersion', 
             offset      = 0x00000000, 
             expand      = False,
@@ -157,7 +168,7 @@ class ClinkFeb(pr.Device):
         ))        
         
         self.add(cl.ClinkTop(
-            offset      = 0x00010000,
+            offset      = 0x00100000,
             serialA     = serialA,
             serialB     = serialB,
             expand      = False,
@@ -166,14 +177,14 @@ class ClinkFeb(pr.Device):
         self.add(ClinkTrigCtrl(      
             name        = 'TrigCtrl[0]', 
             description = 'Channel A trigger control', 
-            offset      = 0x00020000, 
+            offset      = 0x00200000, 
             expand      = False,
         )) 
 
         self.add(ClinkTrigCtrl(      
             name        = 'TrigCtrl[1]', 
             description = 'Channel B trigger control', 
-            offset      = 0x00020100, 
+            offset      = 0x00200100, 
             expand      = False,
         ))     
 
@@ -182,15 +193,45 @@ class ClinkFeb(pr.Device):
             if (version3):
                 self.add(pgp.Pgp3AxiL(            
                     name    = (f'PgpMon[{i}]'), 
-                    offset  = (0x00040000 + i*0x2000), 
+                    offset  = (0x00400000 + i*0x2000), 
                     numVc   = 4,
                     writeEn = False,
                     expand  = False,
                 )) 
+                
+                self.add(axi.AxiStreamMonitoring(            
+                    name        = (f'PgpTxAxisMon[{i}]'), 
+                    offset      = (0x00400000 + i*0x4000 + 0x4000), 
+                    numberLanes = 4,
+                    expand      = False,
+                ))        
+
+                self.add(axi.AxiStreamMonitoring(            
+                    name        = (f'PgpRxAxisMon[{i}]'), 
+                    offset      = (0x00400000 + i*0x4000 + 0x6000), 
+                    numberLanes = 4,
+                    expand      = False,
+                ))
+                
             else:
                 self.add(pgp.Pgp2bAxi(            
                     name    = (f'PgpMon[{i}]'), 
-                    offset  = (0x00040000 + i*0x2000), 
+                    offset  = (0x00400000 + i*0x6000 + 0*0x2000), 
                     writeEn = False,
                     expand  = False,
                 ))           
+     
+                self.add(axi.AxiStreamMonitoring(            
+                    name        = (f'PgpTxAxisMon[{i}]'), 
+                    offset      = (0x00400000 + i*0x6000 + 1*0x2000), 
+                    numberLanes = 4,
+                    expand      = False,
+                ))        
+
+                self.add(axi.AxiStreamMonitoring(            
+                    name        = (f'PgpRxAxisMon[{i}]'), 
+                    offset      = (0x00400000 + i*0x6000 + 2*0x2000), 
+                    numberLanes = 4,
+                    expand      = False,
+                ))                
+                
