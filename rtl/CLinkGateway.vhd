@@ -335,6 +335,7 @@ begin
       port map (
          -- Trigger Input
          pgpTrigger      => pgpTrigger,
+         camCtrl         => camCtrl,
          -- AXI-Lite Interface (axilClk domain)
          axilClk         => axilClk,
          axilRst         => axilRst,
