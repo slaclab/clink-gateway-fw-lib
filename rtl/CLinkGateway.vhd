@@ -122,6 +122,7 @@ begin
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
+            -- CHAN_COUNT_G    => CHAN_COUNT_G,
             AXI_CLK_FREQ_G  => AXIL_CLK_FREQ_C,
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (
@@ -164,6 +165,7 @@ begin
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
+            -- CHAN_COUNT_G    => CHAN_COUNT_G,
             AXI_CLK_FREQ_G  => AXIL_CLK_FREQ_C,
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (

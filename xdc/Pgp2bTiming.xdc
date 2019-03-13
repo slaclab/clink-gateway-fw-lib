@@ -10,3 +10,4 @@
 
 set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0]] -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]]
 set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1]] -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] 
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]]
