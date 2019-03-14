@@ -18,110 +18,7 @@ import surf.devices.linear  as linear
 import surf.devices.nxp     as nxp
 import surf.protocols.clink as cl
 import surf.protocols.pgp   as pgp
-
-class ClinkTrigCtrl(pr.Device):
-    def __init__(   self,       
-            name        = "ClinkTrigCtrl",
-            description = "Trigger Controller Container",
-            **kwargs):
-        super().__init__(name=name, description=description, **kwargs) 
-
-        ##############################
-        # Variables
-        ##############################
-        self.add(pr.RemoteVariable(    
-            name         = "EnableTrig",
-            description  = "Enable triggering",
-            offset       = 0x000,
-            bitSize      = 1,
-            base         = pr.Bool,
-            mode         = "RW",
-        ))   
-
-        self.add(pr.RemoteVariable(    
-            name         = "InvCC",
-            description  = "Inverter the 4-bit camCtrl bus",
-            offset       = 0x004,
-            bitSize      = 1,
-            base         = pr.Bool,
-            mode         = "RW",
-        ))    
-
-        self.add(pr.RemoteVariable(    
-            name         = "TrigMap",
-            description  = "0x0: map trigger to channel A, 0x1: map trigger to channel B",
-            offset       = 0x008,
-            bitSize      = 1,
-            mode         = "RW",
-            enum         = {
-                0x0: 'ChA', 
-                0x1: 'ChB', 
-            },            
-        ))
-
-        self.add(pr.RemoteVariable(    
-            name         = "TrigPulseWidth",
-            description  = "Sets the trigger pulse width on the 4-bit camCtrl bus",
-            offset       = 0x00C,
-            bitSize      = 16,
-            mode         = "RW",
-            units        = '1/125MHz',          
-        )) 
-        
-        self.add(pr.LinkVariable(
-            name         = "TrigPulseWidthMicrosec", 
-            description  = "TrigPulseWidth in microseconds",
-            mode         = "RW", 
-            units        = "microsec",
-            disp         = '{:0.3f}', 
-            dependencies = [self.TrigPulseWidth], 
-            linkedGet    = lambda: (float(self.TrigPulseWidth.value()+1) * 0.008),
-            linkedSet    = lambda value, write: self.TrigPulseWidth.set(int(value/0.008)-1),
-        ))        
-        
-        self.add(pr.RemoteVariable(    
-            name         = "TrigMask",
-            description  = "Sets the trigger mask on the 4-bit camCtrl bus",
-            offset       = 0x010,
-            bitSize      = 4,
-            mode         = "RW",
-        ))
-        
-        self.add(pr.RemoteVariable(    
-            name         = "TrigRate",
-            description  = "Trigger Rate",
-            offset       = 0x0F4,
-            units        = 'Hz',
-            disp         = '{:d}',
-            mode         = "RO",
-            pollInterval = 1,
-        ))
-        
-        self.add(pr.RemoteVariable(    
-            name         = "TrigCnt",
-            description  = "Trigger Counter",
-            offset       = 0x0F8,
-            disp         = '{:d}',
-            mode         = "RO",
-            pollInterval = 1,
-        ))           
-
-        self.add(pr.RemoteVariable(
-            name         = "CntRst",                 
-            description  = "Counter Reset",
-            mode         = 'WO',
-            offset       = 0x0FC,
-            hidden       = True,
-        ))          
-        
-    def hardReset(self):
-        self.CntRst.set(0x1)
-
-    def softReset(self):
-        self.CntRst.set(0x1)
-
-    def countReset(self):
-        self.CntRst.set(0x1)            
+import ClinkFeb             as feb
         
 class ClinkFeb(pr.Device):
     def __init__(   self,       
@@ -129,6 +26,8 @@ class ClinkFeb(pr.Device):
             description = "ClinkFeb Container",
             serialA     = None,
             serialB     = None,
+            camTypeA    = None,
+            camTypeB    = None,
             version3    = False, # true = PGPv3, false = PGP2b
             **kwargs):
         super().__init__(name=name, description=description, **kwargs) 
@@ -169,19 +68,37 @@ class ClinkFeb(pr.Device):
         
         self.add(cl.ClinkTop(
             offset      = 0x00100000,
-            serialA     = serialA,
-            serialB     = serialB,
             expand      = False,
         ))
+        
+        if (camTypeA=='Opal000'):
+            self.add(cl.UartOpal000(      
+                name        = 'UartOpal000[0]', 
+                serial      = serialA,
+                offset      = self.ClinkTop.ChannelA.offset, 
+                expand      = False,
+            ))         
+        elif (camTypeA!=None):
+            raise ValueError(f'camTypeA={camTypeA} is Invalid type' )
+            
+        if (camTypeB=='Opal000'):
+            self.add(cl.UartOpal000(      
+                name        = 'UartOpal000[1]', 
+                serial      = serialB,
+                offset      = self.ClinkTop.ChannelB.offset, 
+                expand      = False,
+            ))         
+        elif (camTypeB!=None):
+            raise ValueError(f'camTypeB={camTypeB} is Invalid type' )            
 
-        self.add(ClinkTrigCtrl(      
+        self.add(feb.ClinkTrigCtrl(      
             name        = 'TrigCtrl[0]', 
             description = 'Channel A trigger control', 
             offset      = 0x00200000, 
             expand      = False,
         )) 
 
-        self.add(ClinkTrigCtrl(      
+        self.add(feb.ClinkTrigCtrl(      
             name        = 'TrigCtrl[1]', 
             description = 'Channel B trigger control', 
             offset      = 0x00200100, 
