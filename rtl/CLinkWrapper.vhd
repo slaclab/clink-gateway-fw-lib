@@ -204,7 +204,11 @@ begin
          ledBlu(0) <= '1';
       end if;
 
-      if camStatus(1).running = '1' then
+      if CHAN_COUNT_G = 1 then
+         ledRed(1) <= '1';
+         ledGrn(1) <= '1';
+         ledBlu(1) <= '1';
+      elsif camStatus(1).running = '1' then
          ledRed(1) <= '1';
          ledGrn(1) <= '0';
          ledBlu(1) <= '1';
