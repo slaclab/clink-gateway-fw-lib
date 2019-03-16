@@ -75,7 +75,7 @@ class ClinkFeb(pr.Device):
             self.add(cl.UartOpal000(      
                 name        = 'UartOpal000[0]', 
                 serial      = serialA,
-                offset      = self.ClinkTop.ChannelA.offset, 
+                offset      = self.ClinkTop.Channel[0].offset, 
                 expand      = False,
             ))         
         elif (camTypeA!=None):
@@ -85,7 +85,7 @@ class ClinkFeb(pr.Device):
             self.add(cl.UartOpal000(      
                 name        = 'UartOpal000[1]', 
                 serial      = serialB,
-                offset      = self.ClinkTop.ChannelB.offset, 
+                offset      = self.ClinkTop.Channel[1].offset, 
                 expand      = False,
             ))         
         elif (camTypeB!=None):
