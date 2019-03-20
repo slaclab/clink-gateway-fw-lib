@@ -68,6 +68,8 @@ class ClinkFeb(pr.Device):
         
         self.add(cl.ClinkTop(
             offset      = 0x00100000,
+            serialA     = None if (camTypeA!=None) else serialA,
+            serialB     = None if (camTypeB!=None) else serialB,
             expand      = False,
         ))
         
