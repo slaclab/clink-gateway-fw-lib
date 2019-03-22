@@ -80,6 +80,13 @@ class ClinkFeb(pr.Device):
                 offset      = self.ClinkTop.Channel[0].offset, 
                 expand      = False,
             ))         
+        elif (camTypeA=='Piranha4'):
+            self.add(cl.UartPiranha4(      
+                name        = 'UartPiranha4[0]', 
+                serial      = serialA,
+                offset      = self.ClinkTop.Channel[0].offset, 
+                expand      = False,
+            ))              
         elif (camTypeA!=None):
             raise ValueError(f'camTypeA={camTypeA} is Invalid type' )
             
@@ -89,7 +96,15 @@ class ClinkFeb(pr.Device):
                 serial      = serialB,
                 offset      = self.ClinkTop.Channel[1].offset, 
                 expand      = False,
-            ))         
+            )) 
+
+        elif (camTypeB=='Piranha4'):
+            self.add(cl.UartPiranha4(      
+                name        = 'UartPiranha4[1]', 
+                serial      = serialB,
+                offset      = self.ClinkTop.Channel[1].offset, 
+                expand      = False,
+            ))            
         elif (camTypeB!=None):
             raise ValueError(f'camTypeB={camTypeB} is Invalid type' )            
 
