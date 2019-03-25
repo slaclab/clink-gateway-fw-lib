@@ -24,10 +24,8 @@ class ClinkFeb(pr.Device):
     def __init__(   self,       
             name        = "ClinkFeb",
             description = "ClinkFeb Container",
-            serialA     = None,
-            serialB     = None,
-            camTypeA    = None,
-            camTypeB    = None,
+            serial      = [None,None],
+            camType     = [None,None],
             version3    = False, # true = PGPv3, false = PGP2b
             **kwargs):
         super().__init__(name=name, description=description, **kwargs) 
@@ -68,45 +66,10 @@ class ClinkFeb(pr.Device):
         
         self.add(cl.ClinkTop(
             offset      = 0x00100000,
-            serialA     = None if (camTypeA!=None) else serialA,
-            serialB     = None if (camTypeB!=None) else serialB,
+            serial      = serial,
+            camType     = camType,
             expand      = False,
-        ))
-        
-        if (camTypeA=='Opal000'):
-            self.add(cl.UartOpal000(      
-                name        = 'UartOpal000[0]', 
-                serial      = serialA,
-                offset      = self.ClinkTop.Channel[0].offset, 
-                expand      = False,
-            ))         
-        elif (camTypeA=='Piranha4'):
-            self.add(cl.UartPiranha4(      
-                name        = 'UartPiranha4[0]', 
-                serial      = serialA,
-                offset      = self.ClinkTop.Channel[0].offset, 
-                expand      = False,
-            ))              
-        elif (camTypeA!=None):
-            raise ValueError(f'camTypeA={camTypeA} is Invalid type' )
-            
-        if (camTypeB=='Opal000'):
-            self.add(cl.UartOpal000(      
-                name        = 'UartOpal000[1]', 
-                serial      = serialB,
-                offset      = self.ClinkTop.Channel[1].offset, 
-                expand      = False,
-            )) 
-
-        elif (camTypeB=='Piranha4'):
-            self.add(cl.UartPiranha4(      
-                name        = 'UartPiranha4[1]', 
-                serial      = serialB,
-                offset      = self.ClinkTop.Channel[1].offset, 
-                expand      = False,
-            ))            
-        elif (camTypeB!=None):
-            raise ValueError(f'camTypeB={camTypeB} is Invalid type' )            
+        ))    
 
         self.add(feb.ClinkTrigCtrl(      
             name        = 'TrigCtrl[0]', 
