@@ -61,6 +61,11 @@ args = parser.parse_args()
 
 #################################################################
 
+if ('_primary.mcs' in args.mcs) or ('_secondary.mcs' in args.mcs):
+    raise ValueError(f'ERROR: --mcs looks like a PCIe image file (not FEB)' ) 
+
+#################################################################
+
 class MyRoot(kcu1500.Core):
 
     def __init__(self,
