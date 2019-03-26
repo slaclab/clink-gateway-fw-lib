@@ -27,8 +27,9 @@ use work.ClinkPkg.all;
 
 entity CLinkWrapper is
    generic (
-      TPD_G        : time                 := 1 ns;
-      CHAN_COUNT_G : integer range 1 to 2 := 1);
+      TPD_G            : time                 := 1 ns;
+      CHAN_COUNT_G     : integer range 1 to 2 := 1;
+      AXIL_BASE_ADDR_G : slv(31 downto 0));
    port (
       -- Clink Ports
       cbl0Half0P      : inout slv(4 downto 0);  --  2,  4,  5,  6, 3
@@ -48,8 +49,8 @@ entity CLinkWrapper is
       ledGrn          : out   slv(1 downto 0);
       ledBlu          : out   slv(1 downto 0);
       -- Stable Reference IDELAY Clock and Reset
-      refClk200MHz    : in   sl;
-      refRst200MHz    : in   sl;
+      refClk200MHz    : in    sl;
+      refRst200MHz    : in    sl;
       -- Camera Control Bits
       camCtrl         : in    Slv4Array(1 downto 0);
       -- Camera Data Interface
@@ -92,8 +93,11 @@ begin
          TPD_G              => TPD_G,
          CHAN_COUNT_G       => CHAN_COUNT_G,
          UART_READY_EN_G    => true,
+         COMMON_AXIL_CLK_G  => true,
+         COMMON_DATA_CLK_G  => true,
          DATA_AXIS_CONFIG_G => AXIS_128_C,
-         UART_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C)
+         UART_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C,
+         AXIL_BASE_ADDR_G   => AXIL_BASE_ADDR_G)
       port map (
          -- Clink Ports
          cbl0Half0P      => cbl0Half0P,

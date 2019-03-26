@@ -284,8 +284,9 @@ begin
    ----------------
    U_CLinkWrapper : entity work.CLinkWrapper
       generic map (
-         TPD_G        => TPD_G,
-         CHAN_COUNT_G => CHAN_COUNT_G)
+         TPD_G            => TPD_G,
+         CHAN_COUNT_G     => CHAN_COUNT_G,
+         AXIL_BASE_ADDR_G => XBAR_CONFIG_C(CLINK_INDEX_C).baseAddr)
       port map (
          -- Clink Ports
          cbl0Half0P      => cbl0Half0P,
