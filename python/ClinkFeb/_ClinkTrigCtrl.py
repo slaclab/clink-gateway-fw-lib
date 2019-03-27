@@ -52,23 +52,24 @@ class ClinkTrigCtrl(pr.Device):
         ))
 
         self.add(pr.RemoteVariable(    
-            name         = "TrigPulseWidth",
+            name         = "TrigPulseWidthRaw",
             description  = "Sets the trigger pulse width on the 4-bit camCtrl bus",
             offset       = 0x00C,
             bitSize      = 16,
             mode         = "RW",
             units        = '1/125MHz',          
-        )) 
-        
+            hidden       = True,
+        ))          
+                
         self.add(pr.LinkVariable(
-            name         = "TrigPulseWidthMicrosec", 
+            name         = "TrigPulseWidth", 
             description  = "TrigPulseWidth in microseconds",
             mode         = "RW", 
             units        = "microsec",
             disp         = '{:0.3f}', 
-            dependencies = [self.TrigPulseWidth], 
-            linkedGet    = lambda: (float(self.TrigPulseWidth.value()+1) * 0.008),
-            linkedSet    = lambda value, write: self.TrigPulseWidth.set(int(value/0.008)-1),
+            dependencies = [self.TrigPulseWidthRaw], 
+            linkedGet    = lambda: (float(self.TrigPulseWidthRaw.value()+1) * 0.008),
+            linkedSet    = lambda value, write: self.TrigPulseWidthRaw.set(int(value/0.008)-1),
         ))        
         
         self.add(pr.RemoteVariable(    
