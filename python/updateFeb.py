@@ -8,14 +8,25 @@
 # copied, modified, propagated, or distributed except according to the terms 
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
+
 import pyrogue as pr
-import rogue.hardware.axi
-import rogue.protocols
-import XilinxKcu1500Pgp as kcu1500
-import ClinkFeb as feb
+import os
+baseDir = os.path.dirname(os.path.realpath(__file__))
+pr.addLibraryPath(baseDir)
+pr.addLibraryPath(baseDir + '/../../surf/python')
+pr.addLibraryPath(baseDir + '/../../axi-pcie-core/python')
+pr.addLibraryPath(baseDir + '/../../lcls-timing-core/python')
+pr.addLibraryPath(baseDir + '/../../lcls2-pgp-fw-lib/python')
+
 import sys
 import argparse
 import time
+
+import rogue.hardware.axi
+import rogue.protocols
+
+import XilinxKcu1500Pgp as kcu1500
+import ClinkFeb         as feb
 
 #################################################################
 
