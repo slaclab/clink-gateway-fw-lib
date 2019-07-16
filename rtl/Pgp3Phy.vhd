@@ -72,9 +72,9 @@ architecture mapping of Pgp3Phy is
    constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, PHY_BASE_ADDR_G, 20, 14);
    
    signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
    signal pgpRxIn  : Pgp3RxInArray(1 downto 0)  := (others => PGP3_RX_IN_INIT_C);
    signal pgpRxOut : Pgp3RxOutArray(1 downto 0) := (others => PGP3_RX_OUT_INIT_C);
@@ -249,50 +249,50 @@ begin
       -----------------------------
       -- Monitor the PGP TX streams
       -----------------------------
-      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
-         generic map(
-            TPD_G            => TPD_G,
-            COMMON_CLK_G     => false,
-            AXIS_CLK_FREQ_G  => (10.3125E+9/64.0),  -- GTX7 implementation is serial rate div by 64 (not 66) for PGPv3
-            AXIS_NUM_SLOTS_G => 4,
-            AXIS_CONFIG_G    => PGP3_AXIS_CONFIG_C)
-         port map(
-            -- AXIS Stream Interface
-            axisClk          => pgpClk(i),
-            axisRst          => pgpRst(i),
-            axisMasters      => pgpTxMasters(4*i+3 downto 4*i),
-            axisSlaves       => pgpTxSlaves(4*i+3 downto 4*i),
-            -- AXI lite slave port for register access
-            axilClk          => sysClk,
-            axilRst          => sysRst,
-            sAxilWriteMaster => phyWriteMasters((2*i)+1),
-            sAxilWriteSlave  => phyWriteSlaves((2*i)+1),
-            sAxilReadMaster  => phyReadMasters((2*i)+1),
-            sAxilReadSlave   => phyReadSlaves((2*i)+1));
+--      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
+--         generic map(
+--            TPD_G            => TPD_G,
+--            COMMON_CLK_G     => false,
+--            AXIS_CLK_FREQ_G  => (10.3125E+9/64.0),  -- GTX7 implementation is serial rate div by 64 (not 66) for PGPv3
+--            AXIS_NUM_SLOTS_G => 4,
+--            AXIS_CONFIG_G    => PGP3_AXIS_CONFIG_C)
+--         port map(
+--            -- AXIS Stream Interface
+--            axisClk          => pgpClk(i),
+--            axisRst          => pgpRst(i),
+--            axisMasters      => pgpTxMasters(4*i+3 downto 4*i),
+--            axisSlaves       => pgpTxSlaves(4*i+3 downto 4*i),
+--            -- AXI lite slave port for register access
+--            axilClk          => sysClk,
+--            axilRst          => sysRst,
+--            sAxilWriteMaster => phyWriteMasters((2*i)+1),
+--            sAxilWriteSlave  => phyWriteSlaves((2*i)+1),
+--            sAxilReadMaster  => phyReadMasters((2*i)+1),
+--            sAxilReadSlave   => phyReadSlaves((2*i)+1));
 
       -----------------------------
       -- Monitor the PGP RX streams
       -----------------------------
-      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
-         generic map(
-            TPD_G            => TPD_G,
-            COMMON_CLK_G     => false,
-            AXIS_CLK_FREQ_G  => (10.3125E+9/64.0),  -- GTX7 implementation is serial rate div by 64 (not 66) for PGPv3
-            AXIS_NUM_SLOTS_G => 4,
-            AXIS_CONFIG_G    => PGP3_AXIS_CONFIG_C)
-         port map(
-            -- AXIS Stream Interface
-            axisClk          => pgpClk(i),
-            axisRst          => pgpRst(i),
-            axisMasters      => pgpRxMasters(4*i+3 downto 4*i),
-            axisSlaves       => (others => AXI_STREAM_SLAVE_FORCE_C),  -- SLAVE_READY_EN_G=false
-            -- AXI lite slave port for register access
-            axilClk          => sysClk,
-            axilRst          => sysRst,
-            sAxilWriteMaster => phyWriteMasters((2*i)+2),
-            sAxilWriteSlave  => phyWriteSlaves((2*i)+2),
-            sAxilReadMaster  => phyReadMasters((2*i)+2),
-            sAxilReadSlave   => phyReadSlaves((2*i)+2));
+--      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
+--         generic map(
+--            TPD_G            => TPD_G,
+--            COMMON_CLK_G     => false,
+--            AXIS_CLK_FREQ_G  => (10.3125E+9/64.0),  -- GTX7 implementation is serial rate div by 64 (not 66) for PGPv3
+--            AXIS_NUM_SLOTS_G => 4,
+--            AXIS_CONFIG_G    => PGP3_AXIS_CONFIG_C)
+--         port map(
+--            -- AXIS Stream Interface
+--            axisClk          => pgpClk(i),
+--            axisRst          => pgpRst(i),
+--            axisMasters      => pgpRxMasters(4*i+3 downto 4*i),
+--            axisSlaves       => (others => AXI_STREAM_SLAVE_FORCE_C),  -- SLAVE_READY_EN_G=false
+--            -- AXI lite slave port for register access
+--            axilClk          => sysClk,
+--            axilRst          => sysRst,
+--            sAxilWriteMaster => phyWriteMasters((2*i)+2),
+--            sAxilWriteSlave  => phyWriteSlaves((2*i)+2),
+--            sAxilReadMaster  => phyReadMasters((2*i)+2),
+--            sAxilReadSlave   => phyReadSlaves((2*i)+2));
 
    end generate GEN_VEC;
 

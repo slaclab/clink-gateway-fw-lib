@@ -90,9 +90,9 @@ architecture mapping of CLinkGateway is
    constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, x"00000000", 24, 20);
 
    signal axilWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
 
    signal axilClk           : sl;
    signal axilRst           : sl;
@@ -257,27 +257,27 @@ begin
          vPIn            => vPIn,
          vNIn            => vNIn);
 
-   ------------------
-   -- I2C PROM Module
-   ------------------  
-   U_AxiI2cEeprom : entity work.AxiI2cEeprom
-      generic map (
-         TPD_G          => TPD_G,
-         ADDR_WIDTH_G   => 13,          -- (64kb:  ADDR_WIDTH_G = 13)
-         I2C_SCL_FREQ_G => 400.0E+3,
-         AXI_CLK_FREQ_G => AXIL_CLK_FREQ_C)
-      port map (
-         -- I2C Ports
-         scl             => configScl,
-         sda             => configSda,
-         -- AXI-Lite Register Interface
-         axilReadMaster  => axilReadMasters(PROM_INDEX_C),
-         axilReadSlave   => axilReadSlaves(PROM_INDEX_C),
-         axilWriteMaster => axilWriteMasters(PROM_INDEX_C),
-         axilWriteSlave  => axilWriteSlaves(PROM_INDEX_C),
-         -- Clocks and Resets
-         axilClk         => axilClk,
-         axilRst         => axilRst);
+--   ------------------
+--   -- I2C PROM Module
+--   ------------------  
+--   U_AxiI2cEeprom : entity work.AxiI2cEeprom
+--      generic map (
+--         TPD_G          => TPD_G,
+--         ADDR_WIDTH_G   => 13,          -- (64kb:  ADDR_WIDTH_G = 13)
+--         I2C_SCL_FREQ_G => 400.0E+3,
+--         AXI_CLK_FREQ_G => AXIL_CLK_FREQ_C)
+--      port map (
+--         -- I2C Ports
+--         scl             => configScl,
+--         sda             => configSda,
+--         -- AXI-Lite Register Interface
+--         axilReadMaster  => axilReadMasters(PROM_INDEX_C),
+--         axilReadSlave   => axilReadSlaves(PROM_INDEX_C),
+--         axilWriteMaster => axilWriteMasters(PROM_INDEX_C),
+--         axilWriteSlave  => axilWriteSlaves(PROM_INDEX_C),
+--         -- Clocks and Resets
+--         axilClk         => axilClk,
+ --        axilRst         => axilRst);
 
    ----------------
    -- CLink Wrapper

@@ -73,10 +73,9 @@ architecture mapping of Pgp2bPhy is
    constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, PHY_BASE_ADDR_G, 20, 13);
 
    signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
-
+   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
    signal pgpRxIn  : Pgp2bRxInArray(1 downto 0)  := (others => PGP2B_RX_IN_INIT_C);
    signal pgpRxOut : Pgp2bRxOutArray(1 downto 0) := (others => PGP2B_RX_OUT_INIT_C);
@@ -308,50 +307,50 @@ begin
       -----------------------------
       -- Monitor the PGP TX streams
       -----------------------------
-      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
-         generic map(
-            TPD_G            => TPD_G,
-            COMMON_CLK_G     => false,
-            AXIS_CLK_FREQ_G  => 156.25E+6,
-            AXIS_NUM_SLOTS_G => 4,
-            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
-         port map(
-            -- AXIS Stream Interface
-            axisClk          => pgpClk,
-            axisRst          => pgpRst,
-            axisMasters      => pgpTxMasters(4*i+3 downto 4*i),
-            axisSlaves       => pgpTxSlaves(4*i+3 downto 4*i),
-            -- AXI lite slave port for register access
-            axilClk          => sysClk,
-            axilRst          => sysRst,
-            sAxilWriteMaster => phyWriteMasters((3*i)+1),
-            sAxilWriteSlave  => phyWriteSlaves((3*i)+1),
-            sAxilReadMaster  => phyReadMasters((3*i)+1),
-            sAxilReadSlave   => phyReadSlaves((3*i)+1));
+--      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
+--         generic map(
+--            TPD_G            => TPD_G,
+--            COMMON_CLK_G     => false,
+--            AXIS_CLK_FREQ_G  => 156.25E+6,
+--            AXIS_NUM_SLOTS_G => 4,
+--            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
+--         port map(
+--            -- AXIS Stream Interface
+--            axisClk          => pgpClk,
+--            axisRst          => pgpRst,
+--            axisMasters      => pgpTxMasters(4*i+3 downto 4*i),
+--            axisSlaves       => pgpTxSlaves(4*i+3 downto 4*i),
+--            -- AXI lite slave port for register access
+--            axilClk          => sysClk,
+--            axilRst          => sysRst,
+--            sAxilWriteMaster => phyWriteMasters((3*i)+1),
+--            sAxilWriteSlave  => phyWriteSlaves((3*i)+1),
+--            sAxilReadMaster  => phyReadMasters((3*i)+1),
+--            sAxilReadSlave   => phyReadSlaves((3*i)+1));
 
       -----------------------------
       -- Monitor the PGP RX streams
       -----------------------------
-      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
-         generic map(
-            TPD_G            => TPD_G,
-            COMMON_CLK_G     => false,
-            AXIS_CLK_FREQ_G  => 156.25E+6,
-            AXIS_NUM_SLOTS_G => 4,
-            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
-         port map(
-            -- AXIS Stream Interface
-            axisClk          => pgpClk,
-            axisRst          => pgpRst,
-            axisMasters      => pgpRxMasters(4*i+3 downto 4*i),
-            axisSlaves       => (others => AXI_STREAM_SLAVE_FORCE_C),  -- SLAVE_READY_EN_G=false
-            -- AXI lite slave port for register access
-            axilClk          => sysClk,
-            axilRst          => sysRst,
-            sAxilWriteMaster => phyWriteMasters((3*i)+2),
-            sAxilWriteSlave  => phyWriteSlaves((3*i)+2),
-            sAxilReadMaster  => phyReadMasters((3*i)+2),
-            sAxilReadSlave   => phyReadSlaves((3*i)+2));
+--      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
+--         generic map(
+--            TPD_G            => TPD_G,
+--            COMMON_CLK_G     => false,
+--            AXIS_CLK_FREQ_G  => 156.25E+6,
+--            AXIS_NUM_SLOTS_G => 4,
+--            AXIS_CONFIG_G    => SSI_PGP2B_CONFIG_C)
+--         port map(
+--            -- AXIS Stream Interface
+--            axisClk          => pgpClk,
+--            axisRst          => pgpRst,
+--            axisMasters      => pgpRxMasters(4*i+3 downto 4*i),
+--            axisSlaves       => (others => AXI_STREAM_SLAVE_FORCE_C),  -- SLAVE_READY_EN_G=false
+--            -- AXI lite slave port for register access
+--            axilClk          => sysClk,
+--            axilRst          => sysRst,
+--            sAxilWriteMaster => phyWriteMasters((3*i)+2),
+--            sAxilWriteSlave  => phyWriteSlaves((3*i)+2),
+--            sAxilReadMaster  => phyReadMasters((3*i)+2),
+--            sAxilReadSlave   => phyReadSlaves((3*i)+2));
 
    end generate GEN_VEC;
 
