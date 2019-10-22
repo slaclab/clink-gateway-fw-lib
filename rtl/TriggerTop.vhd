@@ -18,8 +18,10 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -103,7 +105,7 @@ begin
          ODIV2 => timingClkDiv2,
          O     => timingClk);
 
-   U_TerminateGtx : entity work.Gtxe2ChannelDummy
+   U_TerminateGtx : entity surf.Gtxe2ChannelDummy
       generic map (
          TPD_G   => TPD_G,
          WIDTH_G => 2)
@@ -117,7 +119,7 @@ begin
    GEN_TRIG_FREQ :
    for i in 1 downto 0 generate
 
-      U_trigFreq : entity work.SyncTrigRate
+      U_trigFreq : entity surf.SyncTrigRate
          generic map (
             TPD_G          => TPD_G,
             COMMON_CLK_G   => true,

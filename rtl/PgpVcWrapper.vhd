@@ -18,10 +18,12 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
-use work.Pgp3Pkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+use surf.Pgp3Pkg.all;
 
 entity PgpVcWrapper is
    generic (
@@ -61,7 +63,7 @@ architecture mapping of PgpVcWrapper is
 
 begin
 
-   U_Vc0 : entity work.SrpV3AxiLite
+   U_Vc0 : entity surf.SrpV3AxiLite
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => SIMULATION_G,
@@ -87,7 +89,7 @@ begin
          mAxilWriteMaster => axilWriteMaster,
          mAxilWriteSlave  => axilWriteSlave);
 
-   U_Vc1_Tx : entity work.AxiStreamFifoV2
+   U_Vc1_Tx : entity surf.AxiStreamFifoV2
       generic map (
          -- General Configurations
          TPD_G               => TPD_G,
@@ -112,7 +114,7 @@ begin
          mAxisMaster => pgpTxMasters(1),
          mAxisSlave  => pgpTxSlaves(1));
 
-   U_Vc2_Tx : entity work.AxiStreamFifoV2
+   U_Vc2_Tx : entity surf.AxiStreamFifoV2
       generic map (
          -- General Configurations
          TPD_G               => TPD_G,
@@ -137,7 +139,7 @@ begin
          mAxisMaster => pgpTxMasters(2),
          mAxisSlave  => pgpTxSlaves(2));
 
-   U_Vc2_Rx : entity work.AxiStreamFifoV2
+   U_Vc2_Rx : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => SIMULATION_G,

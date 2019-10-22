@@ -18,9 +18,11 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
 
 entity CLinkGateway is
    generic (
@@ -206,7 +208,7 @@ begin
    --------------------------
    -- AXI-Lite: Crossbar Core
    --------------------------  
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 2,
@@ -260,7 +262,7 @@ begin
 --   ------------------
 --   -- I2C PROM Module
 --   ------------------  
---   U_AxiI2cEeprom : entity work.AxiI2cEeprom
+--   U_AxiI2cEeprom : entity surf.AxiI2cEeprom
 --      generic map (
 --         TPD_G          => TPD_G,
 --         ADDR_WIDTH_G   => 13,          -- (64kb:  ADDR_WIDTH_G = 13)

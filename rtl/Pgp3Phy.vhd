@@ -16,10 +16,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
-use work.Pgp3Pkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
+use surf.Pgp3Pkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -102,7 +104,7 @@ begin
    axilClk <= sysClk;
    axilRst <= sysRst;
 
-   U_PwrUpRst : entity work.PwrUpRst
+   U_PwrUpRst : entity surf.PwrUpRst
       generic map(
          TPD_G         => TPD_G,
          SIM_SPEEDUP_G => SIMULATION_G)
@@ -110,7 +112,7 @@ begin
          clk    => pgpRefClkDiv2,
          rstOut => pgpRefClkDiv2Rst);
 
-   U_MMCM : entity work.ClockManager7
+   U_MMCM : entity surf.ClockManager7
       generic map(
          TPD_G              => TPD_G,
          SIMULATION_G       => SIMULATION_G,
@@ -133,7 +135,7 @@ begin
          rstOut(0) => refRst200MHz,
          rstOut(1) => sysRst);
 
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
@@ -151,7 +153,7 @@ begin
          mAxiReadMasters     => phyReadMasters,
          mAxiReadSlaves      => phyReadSlaves);
 
-   U_PGPv3 : entity work.Pgp3Gtx7Wrapper
+   U_PGPv3 : entity surf.Pgp3Gtx7Wrapper
       generic map(
          TPD_G                => TPD_G,
          ROGUE_SIM_EN_G       => SIMULATION_G,
@@ -205,7 +207,7 @@ begin
    GEN_VEC :
    for i in 1 downto 0 generate
 
-      U_SyncTrig : entity work.SynchronizerOneShot
+      U_SyncTrig : entity surf.SynchronizerOneShot
          generic map (
             TPD_G => TPD_G)
          port map (
@@ -249,7 +251,7 @@ begin
       -----------------------------
       -- Monitor the PGP TX streams
       -----------------------------
---      U_AXIS_TX_MON : entity work.AxiStreamMonAxiL
+--      U_AXIS_TX_MON : entity surf.AxiStreamMonAxiL
 --         generic map(
 --            TPD_G            => TPD_G,
 --            COMMON_CLK_G     => false,
@@ -273,7 +275,7 @@ begin
       -----------------------------
       -- Monitor the PGP RX streams
       -----------------------------
---      U_AXIS_RX_MON : entity work.AxiStreamMonAxiL
+--      U_AXIS_RX_MON : entity surf.AxiStreamMonAxiL
 --         generic map(
 --            TPD_G            => TPD_G,
 --            COMMON_CLK_G     => false,

@@ -18,12 +18,14 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
-use work.SsiPkg.all;
-use work.Pgp3Pkg.all;
-use work.ClinkPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+use surf.SsiPkg.all;
+use surf.Pgp3Pkg.all;
+use surf.ClinkPkg.all;
 
 entity CLinkWrapper is
    generic (
@@ -88,7 +90,7 @@ architecture mapping of CLinkWrapper is
 
 begin
 
-   U_ClinkTop : entity work.ClinkTop
+   U_ClinkTop : entity surf.ClinkTop
       generic map (
          TPD_G              => TPD_G,
          CHAN_COUNT_G       => CHAN_COUNT_G,
@@ -144,7 +146,7 @@ begin
    GEN_VEC :
    for i in (CHAN_COUNT_G-1) downto 0 generate
 
-      U_DataFifoA : entity work.AxiStreamFifoV2
+      U_DataFifoA : entity surf.AxiStreamFifoV2
          generic map (
             TPD_G               => TPD_G,
             SLAVE_READY_EN_G    => true,
@@ -171,7 +173,7 @@ begin
          txSlaveB(i)        <= txSlaveC(i);
       end process;
 
-      U_DataFifoB : entity work.AxiStreamFifoV2
+      U_DataFifoB : entity surf.AxiStreamFifoV2
          generic map (
             TPD_G               => TPD_G,
             SLAVE_READY_EN_G    => true,
