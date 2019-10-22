@@ -120,7 +120,7 @@ architecture mapping of CLinkGateway is
 begin
 
    GEN_PGP3 : if (PGP_TYPE_G = true) generate
-      U_PGP : entity work.Pgp3Phy
+      U_PGP : entity clink_gateway_fw_lib.Pgp3Phy
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
@@ -163,7 +163,7 @@ begin
    end generate;
 
    GEN_PGP2b : if (PGP_TYPE_G = false) generate
-      U_PGP : entity work.Pgp2bPhy
+      U_PGP : entity clink_gateway_fw_lib.Pgp2bPhy
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
@@ -229,7 +229,7 @@ begin
    -----------------
    -- System Modules
    -----------------
-   U_FpgaSystem : entity work.FpgaSystem
+   U_FpgaSystem : entity clink_gateway_fw_lib.FpgaSystem
       generic map (
          TPD_G           => TPD_G,
          SIMULATION_G    => SIMULATION_G,
@@ -284,7 +284,7 @@ begin
    ----------------
    -- CLink Wrapper
    ----------------
-   U_CLinkWrapper : entity work.CLinkWrapper
+   U_CLinkWrapper : entity clink_gateway_fw_lib.CLinkWrapper
       generic map (
          TPD_G            => TPD_G,
          CHAN_COUNT_G     => CHAN_COUNT_G,
@@ -331,7 +331,7 @@ begin
    -----------------
    -- Trigger Module
    -----------------  
-   U_Trig : entity work.TriggerTop
+   U_Trig : entity clink_gateway_fw_lib.TriggerTop
       generic map (
          TPD_G           => TPD_G,
          SIMULATION_G    => SIMULATION_G,

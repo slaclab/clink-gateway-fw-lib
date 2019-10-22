@@ -242,7 +242,7 @@ begin
             dataIn  => pgpRxOut(i).opCodeEn,
             dataOut => pgpTrigger(i));
 
-      U_PgpVcWrapper : entity work.PgpVcWrapper
+      U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
          generic map (
             TPD_G            => TPD_G,
             SIMULATION_G     => SIMULATION_G,
