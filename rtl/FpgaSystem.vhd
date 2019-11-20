@@ -18,9 +18,11 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.I2cPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.I2cPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -95,7 +97,7 @@ begin
    --------------------------
    -- AXI-Lite: Crossbar Core
    --------------------------  
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
@@ -116,7 +118,7 @@ begin
    ---------------------------
    -- AXI-Lite: Version Module
    ---------------------------          
-   U_AxiVersion : entity work.AxiVersion
+   U_AxiVersion : entity surf.AxiVersion
       generic map (
          TPD_G           => TPD_G,
          BUILD_INFO_G    => BUILD_INFO_G,
@@ -140,7 +142,7 @@ begin
       ------------------------------
       -- AXI-Lite: Boot Flash Module
       ------------------------------
-      U_BootProm : entity work.AxiMicronN25QCore
+      U_BootProm : entity surf.AxiMicronN25QCore
          generic map (
             TPD_G          => TPD_G,
             AXI_CLK_FREQ_G => AXI_CLK_FREQ_G,        -- units of Hz
@@ -182,7 +184,7 @@ begin
       ----------------------
       -- AXI-Lite: Power I2C
       ----------------------
-      U_PwrI2C : entity work.AxiI2cRegMaster
+      U_PwrI2C : entity surf.AxiI2cRegMaster
          generic map (
             TPD_G          => TPD_G,
             DEVICE_MAP_G   => PWR_I2C_C,
@@ -204,7 +206,7 @@ begin
       -----------------------
       -- AXI-Lite XADC Module
       -----------------------
-      U_Xadc : entity work.AxiXadcMinimumCore
+      U_Xadc : entity surf.AxiXadcMinimumCore
          port map (
             -- XADC Ports
             vPIn           => vPIn,
@@ -222,7 +224,7 @@ begin
       -- AXI-Lite: SFP I2C
       --------------------
       GEN_VEC : for i in 3 downto 0 generate
-         U_SfpI2C : entity work.Sff8472
+         U_SfpI2C : entity surf.Sff8472
             generic map (
                TPD_G          => TPD_G,
                I2C_SCL_FREQ_G => 400.0E+3,  -- units of Hz

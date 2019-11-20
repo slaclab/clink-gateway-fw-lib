@@ -18,9 +18,11 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
 
 entity CLinkGateway is
    generic (
@@ -118,7 +120,7 @@ architecture mapping of CLinkGateway is
 begin
 
    GEN_PGP3 : if (PGP_TYPE_G = true) generate
-      U_PGP : entity work.Pgp3Phy
+      U_PGP : entity clink_gateway_fw_lib.Pgp3Phy
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
@@ -161,7 +163,7 @@ begin
    end generate;
 
    GEN_PGP2b : if (PGP_TYPE_G = false) generate
-      U_PGP : entity work.Pgp2bPhy
+      U_PGP : entity clink_gateway_fw_lib.Pgp2bPhy
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
@@ -206,7 +208,7 @@ begin
    --------------------------
    -- AXI-Lite: Crossbar Core
    --------------------------  
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 2,
@@ -227,7 +229,7 @@ begin
    -----------------
    -- System Modules
    -----------------
-   U_FpgaSystem : entity work.FpgaSystem
+   U_FpgaSystem : entity clink_gateway_fw_lib.FpgaSystem
       generic map (
          TPD_G           => TPD_G,
          SIMULATION_G    => SIMULATION_G,
@@ -260,7 +262,7 @@ begin
 --   ------------------
 --   -- I2C PROM Module
 --   ------------------  
---   U_AxiI2cEeprom : entity work.AxiI2cEeprom
+--   U_AxiI2cEeprom : entity surf.AxiI2cEeprom
 --      generic map (
 --         TPD_G          => TPD_G,
 --         ADDR_WIDTH_G   => 13,          -- (64kb:  ADDR_WIDTH_G = 13)
@@ -282,7 +284,7 @@ begin
    ----------------
    -- CLink Wrapper
    ----------------
-   U_CLinkWrapper : entity work.CLinkWrapper
+   U_CLinkWrapper : entity clink_gateway_fw_lib.CLinkWrapper
       generic map (
          TPD_G            => TPD_G,
          CHAN_COUNT_G     => CHAN_COUNT_G,
@@ -329,7 +331,7 @@ begin
    -----------------
    -- Trigger Module
    -----------------  
-   U_Trig : entity work.TriggerTop
+   U_Trig : entity clink_gateway_fw_lib.TriggerTop
       generic map (
          TPD_G           => TPD_G,
          SIMULATION_G    => SIMULATION_G,
