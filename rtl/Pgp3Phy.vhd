@@ -26,6 +26,8 @@ use surf.Pgp3Pkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
+library clink_gateway_fw_lib;
+
 entity Pgp3Phy is
    generic (
       TPD_G           : time    := 1 ns;

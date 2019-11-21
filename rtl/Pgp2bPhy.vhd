@@ -27,6 +27,8 @@ use surf.Pgp2bPkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
+library clink_gateway_fw_lib;
+
 entity Pgp2bPhy is
    generic (
       TPD_G           : time    := 1 ns;
