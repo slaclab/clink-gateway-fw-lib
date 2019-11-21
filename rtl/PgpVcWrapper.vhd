@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : PgpVcWrapper.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: PGP Virtual Channel Mapping

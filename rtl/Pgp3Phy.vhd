@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : Pgp3Phy.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: Wrapper for PGPv3 communication
@@ -25,6 +24,8 @@ use surf.Pgp3Pkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
+
+library clink_gateway_fw_lib;
 
 entity Pgp3Phy is
    generic (

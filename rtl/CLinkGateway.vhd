@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : CLinkGateway.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: CameraLink Gateway Core
@@ -23,6 +22,8 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
 use surf.AxiLitePkg.all;
+
+library clink_gateway_fw_lib;
 
 entity CLinkGateway is
    generic (
