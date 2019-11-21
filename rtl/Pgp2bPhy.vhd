@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : Pgp2bPhy.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: Wrapper for PGPv2b communication

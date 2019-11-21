@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : FpgaSystem.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: System Level Modules

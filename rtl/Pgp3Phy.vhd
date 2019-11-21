@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : Pgp3Phy.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: Wrapper for PGPv3 communication

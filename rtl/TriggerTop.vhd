@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : TriggerTop.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: Top Trigger Module

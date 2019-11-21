@@ -1,5 +1,4 @@
 -------------------------------------------------------------------------------
--- File       : CLinkGateway.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: CameraLink Gateway Core
