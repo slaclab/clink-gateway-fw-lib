@@ -24,6 +24,8 @@ use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
 use surf.AxiLitePkg.all;
 
+library clink_gateway_fw_lib;
+
 entity CLinkGateway is
    generic (
       TPD_G        : time                 := 1 ns;
