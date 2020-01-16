@@ -96,14 +96,14 @@ class ClinkFeb(pr.Device):
                     expand  = False,
                 )) 
                 
-                # self.add(axi.AxiStreamMonitoring(            
+                # self.add(axi.AxiStreamMonAxiL(            
                     # name        = (f'PgpTxAxisMon[{i}]'), 
                     # offset      = (0x00400000 + i*0x4000 + 0x4000), 
                     # numberLanes = 4,
                     # expand      = False,
                 # ))        
 
-                # self.add(axi.AxiStreamMonitoring(            
+                # self.add(axi.AxiStreamMonAxiL(            
                     # name        = (f'PgpRxAxisMon[{i}]'), 
                     # offset      = (0x00400000 + i*0x4000 + 0x6000), 
                     # numberLanes = 4,
@@ -118,14 +118,14 @@ class ClinkFeb(pr.Device):
                     expand  = False,
                 ))           
      
-                # self.add(axi.AxiStreamMonitoring(            
+                # self.add(axi.AxiStreamMonAxiL(            
                     # name        = (f'PgpTxAxisMon[{i}]'), 
                     # offset      = (0x00400000 + i*0x6000 + 1*0x2000), 
                     # numberLanes = 4,
                     # expand      = False,
                 # ))        
 
-                # self.add(axi.AxiStreamMonitoring(            
+                # self.add(axi.AxiStreamMonAxiL(            
                     # name        = (f'PgpRxAxisMon[{i}]'), 
                     # offset      = (0x00400000 + i*0x6000 + 2*0x2000), 
                     # numberLanes = 4,
