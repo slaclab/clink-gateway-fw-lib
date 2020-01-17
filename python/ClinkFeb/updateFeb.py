@@ -12,11 +12,12 @@
 import pyrogue as pr
 import os
 baseDir = os.path.dirname(os.path.realpath(__file__))
-pr.addLibraryPath(baseDir)
-pr.addLibraryPath(baseDir + '/../../surf/python')
-pr.addLibraryPath(baseDir + '/../../axi-pcie-core/python')
-pr.addLibraryPath(baseDir + '/../../lcls-timing-core/python')
-pr.addLibraryPath(baseDir + '/../../lcls2-pgp-fw-lib/python')
+pr.addLibraryPath(baseDir + '/../../python')
+pr.addLibraryPath(baseDir + '/../../../surf/python')
+pr.addLibraryPath(baseDir + '/../../../axi-pcie-core/python')
+pr.addLibraryPath(baseDir + '/../../../lcls-timing-core/python')
+pr.addLibraryPath(baseDir + '/../../../l2si-core/python')
+pr.addLibraryPath(baseDir + '/../../../lcls2-pgp-fw-lib/python')
 
 import sys
 import argparse
@@ -25,148 +26,180 @@ import time
 import rogue.hardware.axi
 import rogue.protocols
 
-import XilinxKcu1500Pgp as kcu1500
+import axipcie
+
+import lcls2_pgp_fw_lib.hardware.XilinxKcu1500
 import ClinkFeb         as feb
 
 #################################################################
 
-# Set the argument parser
-parser = argparse.ArgumentParser()
-
-# Convert str to bool
-argBool = lambda s: s.lower() in ['true', 't', 'yes', '1']
-
-# Add arguments
-parser.add_argument(
-    "--dev", 
-    type     = str,
-    required = False,
-    default  = '/dev/datadev_0',
-    help     = "path to device",
-)  
-
-parser.add_argument(
-    "--version3", 
-    type     = argBool,
-    required = False,
-    default  = False,
-    help     = "true = PGPv3, false = PGP2b",
-) 
-
-parser.add_argument(
-    "--mcs", 
-    type     = str,
-    required = True,
-    help     = "path to mcs file",
-)
-
-parser.add_argument(
-    "--lane", 
-    type     = int,
-    required = True,
-    help     = "PGP lane index (range from 0 to 3)",
-)  
-
-# Get the arguments
-args = parser.parse_args()
+class MyKcu1500(pr.Device):
+    def __init__(self, 
+                 numLanes = 4, 
+                 pgp3     = False, 
+                 **kwargs):
+        super().__init__(**kwargs)
+            
+        # PGP Hardware on PCIe 
+        self.add(lcls2_pgp_fw_lib.hardware.XilinxKcu1500.Kcu1500Hsio( 
+            offset    = 0x0080_0000,
+            numLanes  = numLanes,
+            pgp3      = pgp3,
+            expand    = True,
+        ))
+        
+        self.add(axipcie.AxiPcieCore(
+            offset      = 0x0000_0000,
+            numDmaLanes = numLanes,
+            expand      = False,
+        ))  
 
 #################################################################
 
-if ('_primary.mcs' in args.mcs) or ('_secondary.mcs' in args.mcs):
-    raise ValueError(f'ERROR: --mcs looks like a PCIe image file (not FEB)' ) 
-
-#################################################################
-
-class MyRoot(kcu1500.Core):
+class MyRoot(lcls2_pgp_fw_lib.hardware.XilinxKcu1500.Root):
 
     def __init__(self,
-            name        = 'ClinkDev',
-            description = 'Container for CameraLink Dev',
-            dev         = '/dev/datadev_0',# path to PCIe device
-            version3    = False,           # true = PGPv3, false = PGP2b
-            pollEn      = False,           # Enable automatic polling registers
-            initRead    = True,            # Read all registers at start of the system
-            numLane     = 1,               # Number of PGP lanes
-            **kwargs
-        ):
+                 dev         = '/dev/datadev_0',# path to PCIe device
+                 pgp3        = False,           # true = PGPv3, false = PGP2b
+                 pollEn      = False, 
+                 initRead    = True, 
+                 numLanes    = 4,                  
+                 **kwargs):
+
+        # Check for simulation
+        if dev == 'sim':
+            kwargs['timeout'] = 100000000
+        
+        # Pass custom value to parent via super function
         super().__init__(
-            name        = name, 
-            description = description, 
             dev         = dev, 
-            version3    = version3, 
+            pgp3        = pgp3,
             pollEn      = pollEn, 
             initRead    = initRead, 
-            numLane     = numLane, 
-            **kwargs
-        )
+            numLanes    = numLanes, 
+            **kwargs)
+        
+        # Create memory interface
+        self.memMap = axipcie.createAxiPcieMemMap(dev, 'localhost', 8000)            
+            
+        # Instantiate the top level Device and pass it the memory map
+        self.add(MyKcu1500(
+            memBase  = self.memMap,
+            numLanes = numLanes,
+            pgp3     = pgp3,
+            expand   = True,
+        ))          
+        
+        # Create DMA streams
+        self.dmaStreams = axipcie.createAxiPcieDmaStreams(dev, {lane:{dest for dest in range(4)} for lane in range(numLanes)}, 'localhost', 8000)          
         
         # Check if not doing simulation
         if (dev != 'sim'):            
             
             # Create arrays to be filled
-            self._srp = [None for lane in range(numLane)]
+            self._srp = [None for lane in range(numLanes)]
             
             # Create the stream interface
-            for lane in range(numLane):
+            for lane in range(numLanes):
                     
                 # SRP
                 self._srp[lane] = rogue.protocols.srp.SrpV3()
-                pr.streamConnectBiDir(self._dma[lane][0],self._srp[lane])
+                pr.streamConnectBiDir(self.dmaStreams[lane][0],self._srp[lane])
                          
                 # CameraLink Feb Board
                 self.add(feb.ClinkFeb(      
                     name        = (f'ClinkFeb[{lane}]'), 
                     memBase     = self._srp[lane], 
-                    version3    = version3,
-                    enableDeps  = [self.Hardware.PgpMon[lane].RxRemLinkReady], # Only allow access if the PGP link is established
-                    # expand      = False,
+                    version3    = pgp3,
+                    enableDeps = [self.MyKcu1500.Kcu1500Hsio.PgpMon[lane].RxRemLinkReady], # Only allow access if the PGP link is established
                 ))        
-        
-        # Start the system
-        self.start(
-            pollEn   = self._pollEn,
-            initRead = self._initRead,
-            timeout  = self._timeout,
-        )
 
 #################################################################
 
-cl = MyRoot(
-    dev      = args.dev,
-    version3 = args.version3,
-)
-    
-# Create useful pointers
-AxiVersion = cl.ClinkFeb[args.lane].AxiVersion
-PROM       = cl.ClinkFeb[args.lane].CypressS25Fl
+if __name__ == "__main__": 
 
-# Read all the variables
-cl.ReadAll()
+    # Set the argument parser
+    parser = argparse.ArgumentParser()
 
-if (cl.Hardware.PgpMon[args.lane].RxRemLinkReady.get()):
-    print ( '###################################################')
-    print ( '#                 Old Firmware                    #')
-    print ( '###################################################')
-    AxiVersion.printStatus()
-else:
-    # PGP Link down
-    raise ValueError(f'Pgp[lane={args.lane}] is down')
+    # Convert str to bool
+    argBool = lambda s: s.lower() in ['true', 't', 'yes', '1']
 
-# Program the FPGA's PROM
-PROM.LoadMcsFile(args.mcs)
+    # Add arguments
+    parser.add_argument(
+        "--dev", 
+        type     = str,
+        required = False,
+        default  = '/dev/datadev_0',
+        help     = "path to device",
+    )  
 
-if(PROM._progDone):
-    print('\nReloading FPGA firmware from PROM ....')
-    AxiVersion.FpgaReload()
-    time.sleep(5)
-    print('\nReloading FPGA done')
+    parser.add_argument(
+        "--pgp3", 
+        type     = argBool,
+        required = False,
+        default  = False,
+        help     = "true = PGPv3, false = PGP2b",
+    ) 
 
-    print ( '###################################################')
-    print ( '#                 New Firmware                    #')
-    print ( '###################################################')
-    AxiVersion.printStatus()
-else:
-    print('Failed to program FPGA')
+    parser.add_argument(
+        "--mcs", 
+        type     = str,
+        required = True,
+        help     = "path to mcs file",
+    )
 
-cl.stop()
-exit()
+    parser.add_argument(
+        "--lane", 
+        type     = int,
+        required = True,
+        help     = "PGP lane index (range from 0 to 3)",
+    )  
+
+    # Get the arguments
+    args = parser.parse_args()
+
+    #################################################################
+
+    if ('_primary.mcs' in args.mcs) or ('_secondary.mcs' in args.mcs):
+        raise ValueError(f'ERROR: --mcs looks like a PCIe image file (not FEB)' ) 
+
+    # Set base
+    base = MyRoot(dev=args.dev,pgp3=args.pgp3)
+
+    # Start the system
+    base.start()
+
+    # Read all the variables
+    base.ReadAll()
+
+    # Create useful pointers
+    AxiVersion = base.ClinkFeb[args.lane].AxiVersion
+    PROM       = base.ClinkFeb[args.lane].CypressS25Fl
+
+    if (base.MyKcu1500.Kcu1500Hsio.PgpMon[args.lane].RxRemLinkReady.get()):
+        print ( '###################################################')
+        print ( '#                 Old Firmware                    #')
+        print ( '###################################################')
+        AxiVersion.printStatus()
+    else:
+        # PGP Link down
+        raise ValueError(f'Pgp[lane={args.lane}] is down')
+
+    # Program the FPGA's PROM
+    PROM.LoadMcsFile(args.mcs)
+
+    if(PROM._progDone):
+        print('\nReloading FPGA firmware from PROM ....')
+        AxiVersion.FpgaReload()
+        time.sleep(5)
+        print('\nReloading FPGA done')
+
+        print ( '###################################################')
+        print ( '#                 New Firmware                    #')
+        print ( '###################################################')
+        AxiVersion.printStatus()
+    else:
+        print('Failed to program FPGA')
+
+    base.stop()
+    exit()
