@@ -125,7 +125,6 @@ begin
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
-            -- CHAN_COUNT_G    => CHAN_COUNT_G,
             AXI_CLK_FREQ_G  => AXIL_CLK_FREQ_C,
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (
@@ -168,7 +167,6 @@ begin
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,
-            -- CHAN_COUNT_G    => CHAN_COUNT_G,
             AXI_CLK_FREQ_G  => AXIL_CLK_FREQ_C,
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (
@@ -259,28 +257,6 @@ begin
          tempAlertL      => tempAlertL,
          vPIn            => vPIn,
          vNIn            => vNIn);
-
---   ------------------
---   -- I2C PROM Module
---   ------------------  
---   U_AxiI2cEeprom : entity surf.AxiI2cEeprom
---      generic map (
---         TPD_G          => TPD_G,
---         ADDR_WIDTH_G   => 13,          -- (64kb:  ADDR_WIDTH_G = 13)
---         I2C_SCL_FREQ_G => 400.0E+3,
---         AXI_CLK_FREQ_G => AXIL_CLK_FREQ_C)
---      port map (
---         -- I2C Ports
---         scl             => configScl,
---         sda             => configSda,
---         -- AXI-Lite Register Interface
---         axilReadMaster  => axilReadMasters(PROM_INDEX_C),
---         axilReadSlave   => axilReadSlaves(PROM_INDEX_C),
---         axilWriteMaster => axilWriteMasters(PROM_INDEX_C),
---         axilWriteSlave  => axilWriteSlaves(PROM_INDEX_C),
---         -- Clocks and Resets
---         axilClk         => axilClk,
- --        axilRst         => axilRst);
 
    ----------------
    -- CLink Wrapper
