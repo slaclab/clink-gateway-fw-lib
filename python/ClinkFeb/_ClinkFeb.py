@@ -24,11 +24,16 @@ class ClinkFeb(pr.Device):
     def __init__(   self,       
             name        = "ClinkFeb",
             description = "ClinkFeb Container",
-            serial      = [None,None],
-            camType     = [None,None],
+            serial      = None,
+            camType     = None,
             version3    = False, # true = PGPv3, false = PGP2b
+            enI2C       = False, # disabled by default to prevent artificial timeouts due to long I2C access latency
             **kwargs):
         super().__init__(name=name, description=description, **kwargs) 
+
+        # Init Variables for only 1 serial/camType per PGP lane
+        self._serial  = [serial,None],
+        self._camType = [camType,None],
 
         # Add devices
         self.add(axi.AxiVersion( 
@@ -43,20 +48,22 @@ class ClinkFeb(pr.Device):
             hidden      = True, # Hidden in GUI because indented for scripting
         ))
         
-        self.add(nxp.Sa56004x(      
-            name        = 'BoardTemp', 
-            description = 'This device monitors the board temperature and FPGA junction temperature', 
-            offset      = 0x00002000, 
-            expand      = False,
-        ))
+        if enI2C:
         
-        self.add(linear.Ltc4151(
-            name        = 'BoardPwr', 
-            description = 'This device monitors the board power, input voltage and input current', 
-            offset      = 0x00002400, 
-            senseRes    = 20.E-3, # Units of Ohms
-            expand      = False,
-        ))
+            self.add(nxp.Sa56004x(      
+                name        = 'BoardTemp', 
+                description = 'This device monitors the board temperature and FPGA junction temperature', 
+                offset      = 0x00002000, 
+                expand      = False,
+            ))
+            
+            self.add(linear.Ltc4151(
+                name        = 'BoardPwr', 
+                description = 'This device monitors the board power, input voltage and input current', 
+                offset      = 0x00002400, 
+                senseRes    = 20.E-3, # Units of Ohms
+                expand      = False,
+            ))
         
         self.add(xil.Xadc(
             name        = 'Xadc', 
@@ -66,8 +73,8 @@ class ClinkFeb(pr.Device):
         
         self.add(cl.ClinkTop(
             offset      = 0x00100000,
-            serial      = serial,
-            camType     = camType,
+            serial      = self._serial,
+            camType     = self._camType,
             expand      = False,
         ))    
 
@@ -96,20 +103,6 @@ class ClinkFeb(pr.Device):
                     expand  = False,
                 )) 
                 
-                # self.add(axi.AxiStreamMonAxiL(            
-                    # name        = (f'PgpTxAxisMon[{i}]'), 
-                    # offset      = (0x00400000 + i*0x4000 + 0x4000), 
-                    # numberLanes = 4,
-                    # expand      = False,
-                # ))        
-
-                # self.add(axi.AxiStreamMonAxiL(            
-                    # name        = (f'PgpRxAxisMon[{i}]'), 
-                    # offset      = (0x00400000 + i*0x4000 + 0x6000), 
-                    # numberLanes = 4,
-                    # expand      = False,
-                # ))
-                
             else:
                 self.add(pgp.Pgp2bAxi(            
                     name    = (f'PgpMon[{i}]'), 
@@ -117,18 +110,3 @@ class ClinkFeb(pr.Device):
                     writeEn = False,
                     expand  = False,
                 ))           
-     
-                # self.add(axi.AxiStreamMonAxiL(            
-                    # name        = (f'PgpTxAxisMon[{i}]'), 
-                    # offset      = (0x00400000 + i*0x6000 + 1*0x2000), 
-                    # numberLanes = 4,
-                    # expand      = False,
-                # ))        
-
-                # self.add(axi.AxiStreamMonAxiL(            
-                    # name        = (f'PgpRxAxisMon[{i}]'), 
-                    # offset      = (0x00400000 + i*0x6000 + 2*0x2000), 
-                    # numberLanes = 4,
-                    # expand      = False,
-                # ))                
-                
