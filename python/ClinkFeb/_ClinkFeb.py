@@ -32,8 +32,8 @@ class ClinkFeb(pr.Device):
         super().__init__(name=name, description=description, **kwargs) 
 
         # Init Variables for only 1 serial/camType per PGP lane
-        self._serial  = [serial,None],
-        self._camType = [camType,None],
+        self._serial  = [serial,None]
+        self._camType = [camType,None]
 
         # Add devices
         self.add(axi.AxiVersion( 
