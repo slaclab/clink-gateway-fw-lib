@@ -73,9 +73,6 @@ end CLinkWrapper;
 
 architecture mapping of CLinkWrapper is
 
-   constant AXIS_128_C : AxiStreamConfigType := ssiAxiStreamConfig(dataBytes => 16, tDestBits => 0);
-   constant AXIS_32_C  : AxiStreamConfigType := ssiAxiStreamConfig(dataBytes => 4, tDestBits => 0);
-
    signal txMasterA : AxiStreamMasterArray(CHAN_COUNT_G-1 downto 0);
    signal txSlaveA  : AxiStreamSlaveArray(CHAN_COUNT_G-1 downto 0);
 
@@ -96,7 +93,7 @@ begin
          UART_READY_EN_G    => true,
          COMMON_AXIL_CLK_G  => true,
          COMMON_DATA_CLK_G  => true,
-         DATA_AXIS_CONFIG_G => AXIS_128_C,
+         DATA_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C,
          UART_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C,
          AXIL_BASE_ADDR_G   => AXIL_BASE_ADDR_G)
       port map (
@@ -125,8 +122,8 @@ begin
          -- Camera data
          dataClk         => axilClk,
          dataRst         => axilRst,
-         dataMasters     => txMasterA(CHAN_COUNT_G-1 downto 0),
-         dataSlaves      => txSlaveA(CHAN_COUNT_G-1 downto 0),
+         dataMasters     => dataMasters(CHAN_COUNT_G-1 downto 0),
+         dataSlaves      => dataSlaves(CHAN_COUNT_G-1 downto 0),
          -- UART data
          uartClk         => axilClk,
          uartRst         => axilRst,
@@ -141,58 +138,7 @@ begin
          axilReadSlave   => axilReadSlave,
          axilWriteMaster => axilWriteMaster,
          axilWriteSlave  => axilWriteSlave);
-
-   GEN_VEC :
-   for i in (CHAN_COUNT_G-1) downto 0 generate
-
-      U_DataFifoA : entity surf.AxiStreamFifoV2
-         generic map (
-            TPD_G               => TPD_G,
-            SLAVE_READY_EN_G    => true,
-            GEN_SYNC_FIFO_G     => true,
-            FIFO_ADDR_WIDTH_G   => 12,
-            FIFO_PAUSE_THRESH_G => 500,
-            SLAVE_AXI_CONFIG_G  => AXIS_128_C,
-            MASTER_AXI_CONFIG_G => AXIS_32_C)
-         port map (
-            sAxisClk    => axilClk,
-            sAxisRst    => axilRst,
-            sAxisMaster => txMasterA(i),
-            sAxisSlave  => txSlaveA(i),
-            mAxisClk    => axilClk,
-            mAxisRst    => axilRst,
-            mAxisMaster => txMasterB(i),
-            mAxisSlave  => txSlaveB(i));
-
-      -- Force 32-bit alignment
-      process(txMasterB, txSlaveC)
-      begin
-         txMasterC(i)       <= txMasterB(i);
-         txMasterC(i).tKeep <= (others => '1');
-         txSlaveB(i)        <= txSlaveC(i);
-      end process;
-
-      U_DataFifoB : entity surf.AxiStreamFifoV2
-         generic map (
-            TPD_G               => TPD_G,
-            SLAVE_READY_EN_G    => true,
-            GEN_SYNC_FIFO_G     => true,
-            FIFO_ADDR_WIDTH_G   => 9,
-            FIFO_PAUSE_THRESH_G => 500,
-            SLAVE_AXI_CONFIG_G  => AXIS_32_C,
-            MASTER_AXI_CONFIG_G => PGP3_AXIS_CONFIG_C)
-         port map (
-            sAxisClk    => axilClk,
-            sAxisRst    => axilRst,
-            sAxisMaster => txMasterC(i),
-            sAxisSlave  => txSlaveC(i),
-            mAxisClk    => axilClk,
-            mAxisRst    => axilRst,
-            mAxisMaster => dataMasters(i),
-            mAxisSlave  => dataSlaves(i));
-
-   end generate GEN_VEC;
-
+         
    ----------------
    -- Misc. Signals
    ----------------
