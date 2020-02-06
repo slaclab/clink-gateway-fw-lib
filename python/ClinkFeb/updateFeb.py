@@ -56,7 +56,7 @@ class MyKcu1500(pr.Device):
 
 #################################################################
 
-class MyRoot(lcls2_pgp_fw_lib.hardware.XilinxKcu1500.Root):
+class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
 
     def __init__(self,
                  dev         = '/dev/datadev_0',# path to PCIe device
