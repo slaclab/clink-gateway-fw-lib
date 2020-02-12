@@ -11,13 +11,28 @@
 
 import pyrogue as pr
 import os
+import importlib
+
 baseDir = os.path.dirname(os.path.realpath(__file__))
-pr.addLibraryPath(baseDir + '/../../python')
-pr.addLibraryPath(baseDir + '/../../../surf/python')
-pr.addLibraryPath(baseDir + '/../../../axi-pcie-core/python')
-pr.addLibraryPath(baseDir + '/../../../lcls-timing-core/python')
-pr.addLibraryPath(baseDir + '/../../../l2si-core/python')
-pr.addLibraryPath(baseDir + '/../../../lcls2-pgp-fw-lib/python')
+
+print(f"Basedir = {baseDir}")
+
+# First see if submodule packages are already in the python path
+try:
+    import surf
+    import axi_pcie_core
+    import lcls_timing_core
+    import l2si_core
+    import lcls2_pgp_fw_lib
+
+# Otherwise assume it is relative in a standard development directory structure
+except:
+    pr.addLibraryPath(baseDir + '/../python')
+    pr.addLibraryPath(baseDir + '/../../surf/python')
+    pr.addLibraryPath(baseDir + '/../../axi-pcie-core/python')
+    pr.addLibraryPath(baseDir + '/../../lcls-timing-core/python')
+    pr.addLibraryPath(baseDir + '/../../l2si-core/python')
+    pr.addLibraryPath(baseDir + '/../../lcls2-pgp-fw-lib/python')
 
 import sys
 import argparse
