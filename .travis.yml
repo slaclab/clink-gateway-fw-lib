@@ -39,9 +39,6 @@ jobs:
       before_install:
         # Prepare folders
         - mkdir -p $MINICONDA_DIR
-        # Bring all the tags
-        - git pull --unshallow
-        - git pull
         # on OSX rogue needs an older version of the MacOS SDK
         - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
             git clone https://github.com/phracker/MacOSX-SDKs;
