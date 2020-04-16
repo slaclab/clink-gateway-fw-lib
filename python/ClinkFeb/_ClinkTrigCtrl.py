@@ -54,7 +54,7 @@ class ClinkTrigCtrl(pr.Device):
             name         = "TrigPulseWidthRaw",
             description  = "Sets the trigger pulse width on the 4-bit camCtrl bus",
             offset       = 0x00C,
-            bitSize      = 16,
+            bitSize      = 32,
             mode         = "RW",
             units        = '1/125MHz',          
             hidden       = True,

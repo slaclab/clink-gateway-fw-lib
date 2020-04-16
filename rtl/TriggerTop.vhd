@@ -58,12 +58,12 @@ architecture mapping of TriggerTop is
 
    type RegType is record
       cntRst         : slv(1 downto 0);
-      trigCnt        : Slv16Array(3 downto 0);
+      trigCnt        : Slv32Array(3 downto 0);
       enable         : slv(1 downto 0);
       inv            : slv(1 downto 0);
       trigMap        : slv(1 downto 0);
-      ccCntSize      : Slv16Array(1 downto 0);
-      ccCount        : Slv16Array(1 downto 0);
+      ccCntSize      : Slv32Array(1 downto 0);
+      ccCount        : Slv32Array(1 downto 0);
       ccTrigMask     : Slv4Array(1 downto 0);
       camCtrl        : Slv4Array(1 downto 0);
       axilReadSlave  : AxiLiteReadSlaveType;
@@ -76,7 +76,7 @@ architecture mapping of TriggerTop is
       enable         => "00",
       inv            => "00",
       trigMap        => "10",
-      ccCntSize      => (others => toSlv(4095, 16)),
+      ccCntSize      => (others => toSlv(4095, 32)),
       ccCount        => (others => (others => '0')),
       ccTrigMask     => (others => "0001"),
       camCtrl        => (others => "0000"),
