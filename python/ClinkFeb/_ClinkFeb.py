@@ -74,14 +74,15 @@ class ClinkFeb(pr.Device):
             offset      = 0x00100000,
             serial      = self._serial,
             camType     = self._camType,
-            expand      = False,
+            expand      = True,
         ))
+        self.ClinkTop.Ch[0]._expand = True
 
         self.add(feb.ClinkTrigCtrl(
             name        = 'TrigCtrl[0]',
             description = 'Channel A trigger control',
             offset      = 0x00200000,
-            expand      = False,
+            expand      = True,
         ))
 
         self.add(feb.ClinkTrigCtrl(
