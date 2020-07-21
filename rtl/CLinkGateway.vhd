@@ -4,11 +4,11 @@
 -- Description: CameraLink Gateway Core
 -------------------------------------------------------------------------------
 -- This file is part of 'Camera link gateway'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'Camera link gateway', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'Camera link gateway', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ entity CLinkGateway is
    generic (
       TPD_G        : time                 := 1 ns;
       CHAN_COUNT_G : integer range 1 to 2 := 1;
-      PGP_TYPE_G   : boolean              := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv3@10.3125Gb/s, 
+      PGP_TYPE_G   : boolean              := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv3@10.3125Gb/s,
       BUILD_INFO_G : BuildInfoType;
       SIMULATION_G : boolean              := false);
    port (
@@ -206,7 +206,7 @@ begin
 
    --------------------------
    -- AXI-Lite: Crossbar Core
-   --------------------------  
+   --------------------------
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
@@ -307,7 +307,7 @@ begin
 
    -----------------
    -- Trigger Module
-   -----------------  
+   -----------------
    U_Trig : entity clink_gateway_fw_lib.TriggerTop
       generic map (
          TPD_G           => TPD_G,

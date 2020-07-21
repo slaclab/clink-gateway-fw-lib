@@ -4,11 +4,11 @@
 -- Description: Wrapper for PGPv2b communication
 -------------------------------------------------------------------------------
 -- This file is part of 'Camera link gateway'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'Camera link gateway', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'Camera link gateway', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -276,9 +276,9 @@ begin
             pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
             pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));
 
-      --------------         
+      --------------
       -- PGP Monitor
-      --------------         
+      --------------
       U_PgpMon : entity surf.Pgp2bAxi
          generic map (
             TPD_G              => TPD_G,

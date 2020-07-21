@@ -17,7 +17,7 @@ if { [info exists ::env(OVERRIDE_SUBMODULE_LOCKS)] != 1 || $::env(OVERRIDE_SUBMO
    puts "*********************************************************\n\n"
 }
 
-# Load local source Code 
+# Load local source Code
 loadSource -lib clink_gateway_fw_lib      -dir "$::DIR_PATH/rtl"
 
 # Load local source Code
@@ -28,7 +28,7 @@ if { [info exists ::env(INCLUDE_PGP3_10G)] != 1 || $::env(INCLUDE_PGP3_10G) == 0
    loadConstraints -path "$::DIR_PATH/xdc/Pgp2bTiming.xdc"
 } else {
    loadConstraints -path "$::DIR_PATH/xdc/Pgp3Timing.xdc"
-   
+
 }
 
 # Updating the impl_1 strategy

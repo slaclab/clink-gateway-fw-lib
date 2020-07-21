@@ -4,11 +4,11 @@
 -- Description: Top Trigger Module
 -------------------------------------------------------------------------------
 -- This file is part of 'Camera link gateway'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'Camera link gateway', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'Camera link gateway', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -158,9 +158,9 @@ begin
          end if;
       end loop;
 
-      ------------------------      
+      ------------------------
       -- AXI-Lite Transactions
-      ------------------------      
+      ------------------------
 
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
@@ -200,7 +200,7 @@ begin
             trig(i) := pgpTrigger(1);
          end if;
 
-         -- Check for PGP trigger and enabled 
+         -- Check for PGP trigger and enabled
          if (trig(i) = '1') and (r.enable(i) = '1') then
             -- Set the counter size
             v.ccCount(i) := r.ccCntSize(i);
@@ -217,7 +217,7 @@ begin
             v.ccCount(i) := r.ccCount(i) - 1;
          end if;
 
-         -- Outputs 
+         -- Outputs
          if (r.inv(i) = '0') then
             camCtrl(i) <= r.camCtrl(i);
          else
@@ -226,7 +226,7 @@ begin
 
       end loop;
 
-      -- Outputs 
+      -- Outputs
       axilReadSlave  <= r.axilReadSlave;
       axilWriteSlave <= r.axilWriteSlave;
 
