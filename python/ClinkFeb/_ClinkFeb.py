@@ -76,7 +76,7 @@ class ClinkFeb(pr.Device):
             camType     = self._camType,
             expand      = True,
         ))
-        self.ClinkTop.Ch[0]._expand = True
+        # self.ClinkTop.Ch[0]._expand = True
 
         self.add(feb.ClinkTrigCtrl(
             name        = 'TrigCtrl[0]',
