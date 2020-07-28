@@ -164,7 +164,7 @@ begin
          RATE_G               => "10.3125Gbps",
          REFCLK_TYPE_G        => PGP3_REFCLK_312_C,
          EN_PGP_MON_G         => true,
-         EN_GTH_DRP_G         => false,
+         EN_GT_DRP_G          => false,
          EN_QPLL_DRP_G        => false,
          AXIL_BASE_ADDR_G     => XBAR_CONFIG_C(0).baseAddr,
          AXIL_CLK_FREQ_G      => AXI_CLK_FREQ_G)
