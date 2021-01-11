@@ -34,8 +34,10 @@ entity PgpVcWrapper is
       -- Clocks and Resets
       sysClk          : in  sl;
       sysRst          : in  sl;
-      pgpClk          : in  sl;
-      pgpRst          : in  sl;
+      pgpTxClk        : in  sl;
+      pgpTxRst        : in  sl;
+      pgpRxClk        : in  sl;
+      pgpRxRst        : in  sl;
       -- AXI-Lite Interface (sysClk domain)
       axilReadMaster  : out AxiLiteReadMasterType;
       axilReadSlave   : in  AxiLiteReadSlaveType;
@@ -49,10 +51,10 @@ entity PgpVcWrapper is
       txUartSlave     : out AxiStreamSlaveType;
       rxUartMaster    : out AxiStreamMasterType;
       rxUartSlave     : in  AxiStreamSlaveType;
-      -- Frame TX Interface (pgpClk domain)
+      -- Frame TX Interface (pgpTxClk domain)
       pgpTxMasters    : out AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
       pgpTxSlaves     : in  AxiStreamSlaveArray(3 downto 0);
-      -- Frame RX Interface (pgpClk domain)
+      -- Frame RX Interface (pgpRxClk domain)
       pgpRxMasters    : in  AxiStreamMasterArray(3 downto 0);
       pgpRxCtrl       : out AxiStreamCtrlArray(3 downto 0)   := (others => AXI_STREAM_CTRL_UNUSED_C);
       pgpRxSlaves     : out AxiStreamSlaveArray(3 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C));
@@ -70,14 +72,14 @@ begin
          AXI_STREAM_CONFIG_G => PHY_AXI_CONFIG_G)
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain)
-         sAxisClk         => pgpClk,
-         sAxisRst         => pgpRst,
+         sAxisClk         => pgpRxClk,
+         sAxisRst         => pgpRxRst,
          sAxisMaster      => pgpRxMasters(0),
          sAxisSlave       => pgpRxSlaves(0),
          sAxisCtrl        => pgpRxCtrl(0),
          -- Streaming Master (Tx) Data Interface (mAxisClk domain)
-         mAxisClk         => pgpClk,
-         mAxisRst         => pgpRst,
+         mAxisClk         => pgpTxClk,
+         mAxisRst         => pgpTxRst,
          mAxisMaster      => pgpTxMasters(0),
          mAxisSlave       => pgpTxSlaves(0),
          -- Master AXI-Lite Interface (axilClk domain)
@@ -108,8 +110,8 @@ begin
          sAxisMaster => dataMaster,
          sAxisSlave  => dataSlave,
          -- Master Port
-         mAxisClk    => pgpClk,
-         mAxisRst    => pgpRst,
+         mAxisClk    => pgpTxClk,
+         mAxisRst    => pgpTxRst,
          mAxisMaster => pgpTxMasters(1),
          mAxisSlave  => pgpTxSlaves(1));
 
@@ -133,8 +135,8 @@ begin
          sAxisMaster => txUartMaster,
          sAxisSlave  => txUartSlave,
          -- Master Port
-         mAxisClk    => pgpClk,
-         mAxisRst    => pgpRst,
+         mAxisClk    => pgpTxClk,
+         mAxisRst    => pgpTxRst,
          mAxisMaster => pgpTxMasters(2),
          mAxisSlave  => pgpTxSlaves(2));
 
@@ -150,8 +152,8 @@ begin
          MASTER_AXI_CONFIG_G => PGP3_AXIS_CONFIG_C)
       port map (
          -- Slave Port
-         sAxisClk    => pgpClk,
-         sAxisRst    => pgpRst,
+         sAxisClk    => pgpRxClk,
+         sAxisRst    => pgpRxRst,
          sAxisMaster => pgpRxMasters(2),
          sAxisSlave  => pgpRxSlaves(2),
          sAxisCtrl   => pgpRxCtrl(2),

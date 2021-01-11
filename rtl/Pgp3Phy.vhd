@@ -226,8 +226,10 @@ begin
             -- Clocks and Resets
             sysClk          => sysClk,
             sysRst          => sysRst,
-            pgpClk          => pgpClk(i),
-            pgpRst          => pgpRst(i),
+            pgpTxClk        => pgpClk(i),
+            pgpTxRst        => pgpRst(i),
+            pgpRxClk        => pgpClk(i),
+            pgpRxRst        => pgpRst(i),
             -- AXI-Lite Interface (sysClk domain)
             axilReadMaster  => axilReadMasters(i),
             axilReadSlave   => axilReadSlaves(i),
@@ -241,10 +243,10 @@ begin
             txUartSlave     => txUartSlaves(i),
             rxUartMaster    => rxUartMasters(i),
             rxUartSlave     => rxUartSlaves(i),
-            -- Frame TX Interface (pgpClk domain)
+            -- Frame TX Interface (pgpTxClk domain)
             pgpTxMasters    => pgpTxMasters(4*i+3 downto 4*i),
             pgpTxSlaves     => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface (pgpClk domain)
+            -- Frame RX Interface (pgpRxClk domain)
             pgpRxMasters    => pgpRxMasters(4*i+3 downto 4*i),
             pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
             pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));

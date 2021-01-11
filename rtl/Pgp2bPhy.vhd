@@ -78,7 +78,7 @@ architecture mapping of Pgp2bPhy is
    signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
+   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
    signal pgpRxIn  : Pgp2bRxInArray(1 downto 0)  := (others => PGP2B_RX_IN_INIT_C);
    signal pgpRxOut : Pgp2bRxOutArray(1 downto 0) := (others => PGP2B_RX_OUT_INIT_C);
@@ -100,8 +100,11 @@ architecture mapping of Pgp2bPhy is
    signal sysClk : sl;
    signal sysRst : sl;
 
-   signal pgpClk : sl;
-   signal pgpRst : sl;
+   signal pgpTxClk : sl;
+   signal pgpTxRst : sl;
+
+   signal pgpRxClk : slv(1 downto 0);
+   signal pgpRxRst : slv(1 downto 0);
 
 begin
 
@@ -150,10 +153,10 @@ begin
          rstIn     => pgpRefClkDiv2Rst,
          clkOut(0) => refClk200MHz,
          clkOut(1) => sysClk,
-         clkOut(2) => pgpClk,
+         clkOut(2) => pgpTxClk,
          rstOut(0) => refRst200MHz,
          rstOut(1) => sysRst,
-         rstOut(2) => pgpRst);
+         rstOut(2) => pgpTxRst);
 
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
@@ -176,25 +179,28 @@ begin
    GEN_VEC :
    for i in 1 downto 0 generate
 
-      U_PGP : entity surf.Pgp2bGtx7VarLat
+      U_PGP : entity surf.Pgp2bGtx7Fixedlat
          generic map (
-            TPD_G             => TPD_G,
+            TPD_G                 => TPD_G,
+            STABLE_CLOCK_PERIOD_G => 4.0E-9,
             -- CPLL Configurations
-            TX_PLL_G          => "CPLL",
-            RX_PLL_G          => "CPLL",
-            CPLL_REFCLK_SEL_G => "001",
-            CPLL_FBDIV_G      => 2,
-            CPLL_FBDIV_45_G   => 5,
-            CPLL_REFCLK_DIV_G => 1,
+            TX_PLL_G              => "CPLL",
+            RX_PLL_G              => "CPLL",
+            CPLL_REFCLK_SEL_G     => "001",
+            CPLL_FBDIV_G          => 2,
+            CPLL_FBDIV_45_G       => 5,
+            CPLL_REFCLK_DIV_G     => 1,
             -- MGT Configurations
-            RXOUT_DIV_G       => 2,
-            TXOUT_DIV_G       => 2,
-            RX_CLK25_DIV_G    => 13,
-            TX_CLK25_DIV_G    => 13,
-            RXDFEXYDEN_G      => '1',
-            RX_DFE_KL_CFG2_G  => x"301148AC",
+            RXOUT_DIV_G           => 2,
+            TXOUT_DIV_G           => 2,
+            RX_CLK25_DIV_G        => 13,
+            TX_CLK25_DIV_G        => 13,
+            RXDFEXYDEN_G          => '1',
+            RX_DFE_KL_CFG2_G      => x"301148AC",
+            RXCDR_CFG_G           => x"03000023ff10200020",
+            RX_EQUALIZER_G        => "LPM",
             -- VC Configuration
-            VC_INTERLEAVE_G   => 1)
+            VC_INTERLEAVE_G       => 1)
          port map (
             -- GT Clocking
             stableClk        => pgpRefClkDiv2Bufg,
@@ -205,21 +211,20 @@ begin
             gtQPllLock       => '1',
             gtQPllRefClkLost => '0',
             gtQPllReset      => open,
+            gtRxRefClkBufg   => '0',
+            gtTxOutClk       => open,
             -- GT Serial IO
             gtTxP            => pgpTxP(i),
             gtTxN            => pgpTxN(i),
             gtRxP            => pgpRxP(i),
             gtRxN            => pgpRxN(i),
             -- Tx Clocking
-            pgpTxReset       => pgpRst,
-            pgpTxRecClk      => open,
-            pgpTxClk         => pgpClk,
-            pgpTxMmcmReset   => open,
-            pgpTxMmcmLocked  => '1',
+            pgpTxReset       => pgpTxRst,
+            pgpTxClk         => pgpTxClk,
             -- Rx clocking
-            pgpRxReset       => pgpRst,
-            pgpRxRecClk      => open,
-            pgpRxClk         => pgpClk,
+            pgpRxReset       => pgpRxRst(i),
+            pgpRxRecClk      => pgpRxClk(i),
+            pgpRxClk         => pgpRxClk(i),
             pgpRxMmcmReset   => open,
             pgpRxMmcmLocked  => '1',
             -- Non VC TX Signals
@@ -253,8 +258,10 @@ begin
             -- Clocks and Resets
             sysClk          => sysClk,
             sysRst          => sysRst,
-            pgpClk          => pgpClk,
-            pgpRst          => pgpRst,
+            pgpTxClk        => pgpTxClk,
+            pgpTxRst        => pgpTxRst,
+            pgpRxClk        => pgpRxClk(i),
+            pgpRxRst        => pgpRxRst(i),
             -- AXI-Lite Interface (sysClk domain)
             axilReadMaster  => axilReadMasters(i),
             axilReadSlave   => axilReadSlaves(i),
@@ -268,10 +275,10 @@ begin
             txUartSlave     => txUartSlaves(i),
             rxUartMaster    => rxUartMasters(i),
             rxUartSlave     => rxUartSlaves(i),
-            -- Frame TX Interface (pgpClk domain)
+            -- Frame TX Interface (pgpTxClk domain)
             pgpTxMasters    => pgpTxMasters(4*i+3 downto 4*i),
             pgpTxSlaves     => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface (pgpClk domain)
+            -- Frame RX Interface (pgpRxClk domain)
             pgpRxMasters    => pgpRxMasters(4*i+3 downto 4*i),
             pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
             pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));
@@ -290,13 +297,13 @@ begin
             ERROR_CNT_WIDTH_G  => 8)
          port map (
             -- TX PGP Interface (pgpTxClk)
-            pgpTxClk        => pgpClk,
-            pgpTxClkRst     => pgpRst,
+            pgpTxClk        => pgpTxClk,
+            pgpTxClkRst     => pgpTxRst,
             pgpTxIn         => pgpTxIn(i),
             pgpTxOut        => pgpTxOut(i),
             -- RX PGP Interface (pgpRxClk)
-            pgpRxClk        => pgpClk,
-            pgpRxClkRst     => pgpRst,
+            pgpRxClk        => pgpRxClk(i),
+            pgpRxClkRst     => pgpRxRst(i),
             pgpRxIn         => pgpRxIn(i),
             pgpRxOut        => pgpRxOut(i),
             -- AXI-Lite Register Interface (axilClk domain)
