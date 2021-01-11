@@ -32,7 +32,7 @@ class ClinkFeb(pr.Device):
 
         # Init Variables for only 1 serial/camType per PGP lane
         self._serial  = [serial,None]
-        self._camType = [camType,None]
+        self._camType = [camType,camType]
 
         # Add devices
         self.add(axi.AxiVersion(
@@ -74,21 +74,21 @@ class ClinkFeb(pr.Device):
             offset      = 0x00100000,
             serial      = self._serial,
             camType     = self._camType,
-            expand      = False,
+            expand      = True,
         ))
 
         self.add(feb.ClinkTrigCtrl(
             name        = 'TrigCtrl[0]',
             description = 'Channel A trigger control',
             offset      = 0x00200000,
-            expand      = False,
+            expand      = True,
         ))
 
         self.add(feb.ClinkTrigCtrl(
             name        = 'TrigCtrl[1]',
             description = 'Channel B trigger control',
             offset      = 0x00200100,
-            expand      = False,
+            expand      = True,
         ))
 
         for i in range(2):

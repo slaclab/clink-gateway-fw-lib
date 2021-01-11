@@ -164,7 +164,7 @@ begin
          RATE_G               => "10.3125Gbps",
          REFCLK_TYPE_G        => PGP3_REFCLK_312_C,
          EN_PGP_MON_G         => true,
-         EN_GTH_DRP_G         => false,
+         EN_GT_DRP_G          => false,
          EN_QPLL_DRP_G        => false,
          AXIL_BASE_ADDR_G     => XBAR_CONFIG_C(0).baseAddr,
          AXIL_CLK_FREQ_G      => AXI_CLK_FREQ_G)
@@ -226,8 +226,10 @@ begin
             -- Clocks and Resets
             sysClk          => sysClk,
             sysRst          => sysRst,
-            pgpClk          => pgpClk(i),
-            pgpRst          => pgpRst(i),
+            pgpTxClk        => pgpClk(i),
+            pgpTxRst        => pgpRst(i),
+            pgpRxClk        => pgpClk(i),
+            pgpRxRst        => pgpRst(i),
             -- AXI-Lite Interface (sysClk domain)
             axilReadMaster  => axilReadMasters(i),
             axilReadSlave   => axilReadSlaves(i),
@@ -241,10 +243,10 @@ begin
             txUartSlave     => txUartSlaves(i),
             rxUartMaster    => rxUartMasters(i),
             rxUartSlave     => rxUartSlaves(i),
-            -- Frame TX Interface (pgpClk domain)
+            -- Frame TX Interface (pgpTxClk domain)
             pgpTxMasters    => pgpTxMasters(4*i+3 downto 4*i),
             pgpTxSlaves     => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface (pgpClk domain)
+            -- Frame RX Interface (pgpRxClk domain)
             pgpRxMasters    => pgpRxMasters(4*i+3 downto 4*i),
             pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
             pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));
