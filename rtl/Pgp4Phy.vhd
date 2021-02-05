@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
--- Description: Wrapper for PGPv3 communication
+-- Description: Wrapper for PGPv4 communication
 -------------------------------------------------------------------------------
 -- This file is part of 'ATLAS ALTIROC DEV'.
 -- It is subject to the license terms in the LICENSE.txt file found in the
@@ -20,14 +20,14 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
-use surf.Pgp3Pkg.all;
+use surf.Pgp4Pkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 library clink_gateway_fw_lib;
 
-entity Pgp3Phy is
+entity Pgp4Phy is
    generic (
       TPD_G           : time    := 1 ns;
       SIMULATION_G    : boolean := false;
@@ -66,9 +66,9 @@ entity Pgp3Phy is
       pgpRxN           : in  slv(1 downto 0);
       pgpTxP           : out slv(1 downto 0);
       pgpTxN           : out slv(1 downto 0));
-end Pgp3Phy;
+end Pgp4Phy;
 
-architecture mapping of Pgp3Phy is
+architecture mapping of Pgp4Phy is
 
    constant NUM_AXIL_MASTERS_C : natural := 5;
 
@@ -79,11 +79,11 @@ architecture mapping of Pgp3Phy is
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
-   signal pgpRxIn  : Pgp3RxInArray(1 downto 0)  := (others => PGP3_RX_IN_INIT_C);
-   signal pgpRxOut : Pgp3RxOutArray(1 downto 0) := (others => PGP3_RX_OUT_INIT_C);
+   signal pgpRxIn  : Pgp4RxInArray(1 downto 0)  := (others => PGP4_RX_IN_INIT_C);
+   signal pgpRxOut : Pgp4RxOutArray(1 downto 0) := (others => PGP4_RX_OUT_INIT_C);
 
-   signal pgpTxIn  : Pgp3TxInArray(1 downto 0)  := (others => PGP3_TX_IN_INIT_C);
-   signal pgpTxOut : Pgp3TxOutArray(1 downto 0) := (others => PGP3_TX_OUT_INIT_C);
+   signal pgpTxIn  : Pgp4TxInArray(1 downto 0)  := (others => PGP4_TX_IN_INIT_C);
+   signal pgpTxOut : Pgp4TxOutArray(1 downto 0) := (others => PGP4_TX_OUT_INIT_C);
 
    signal pgpTxMasters : AxiStreamMasterArray(7 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
    signal pgpTxSlaves  : AxiStreamSlaveArray(7 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
@@ -154,7 +154,7 @@ begin
          mAxiReadMasters     => phyReadMasters,
          mAxiReadSlaves      => phyReadSlaves);
 
-   U_PGPv3 : entity surf.Pgp3Gtx7Wrapper
+   U_PGPv4 : entity surf.Pgp4Gtx7Wrapper
       generic map(
          TPD_G                => TPD_G,
          ROGUE_SIM_EN_G       => SIMULATION_G,
@@ -162,7 +162,7 @@ begin
          NUM_LANES_G          => 2,
          NUM_VC_G             => 4,
          RATE_G               => "10.3125Gbps",
-         REFCLK_TYPE_G        => PGP3_REFCLK_312_C,
+         REFCLK_FREQ_G        => 312.5E+6,
          EN_PGP_MON_G         => true,
          EN_GT_DRP_G          => false,
          EN_QPLL_DRP_G        => false,
@@ -221,7 +221,7 @@ begin
             TPD_G            => TPD_G,
             SIMULATION_G     => SIMULATION_G,
             GEN_SYNC_FIFO_G  => false,
-            PHY_AXI_CONFIG_G => PGP3_AXIS_CONFIG_C)
+            PHY_AXI_CONFIG_G => PGP4_AXIS_CONFIG_C)
          port map (
             -- Clocks and Resets
             sysClk          => sysClk,
