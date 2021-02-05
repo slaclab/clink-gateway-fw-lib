@@ -26,10 +26,11 @@ use surf.Pgp4Pkg.all;
 
 entity PgpVcWrapper is
    generic (
-      TPD_G            : time    := 1 ns;
-      SIMULATION_G     : boolean := false;
-      GEN_SYNC_FIFO_G  : boolean := false;
-      PHY_AXI_CONFIG_G : AxiStreamConfigType);
+      TPD_G               : time    := 1 ns;
+      SIMULATION_G        : boolean := false;
+      GEN_SYNC_FIFO_G     : boolean := false;
+      TX_CELL_WORDS_MAX_G : integer := 256;
+      PHY_AXI_CONFIG_G    : AxiStreamConfigType);
    port (
       -- Clocks and Resets
       sysClk          : in  sl;
@@ -95,7 +96,7 @@ begin
          -- General Configurations
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => true,
-         VALID_THOLD_G       => 256,
+         VALID_THOLD_G       => TX_CELL_WORDS_MAX_G,
          VALID_BURST_MODE_G  => true,
          -- FIFO configurations
          GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
@@ -120,11 +121,11 @@ begin
          -- General Configurations
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => true,
-         VALID_THOLD_G       => 256,
+         VALID_THOLD_G       => TX_CELL_WORDS_MAX_G,
          VALID_BURST_MODE_G  => true,
          -- FIFO configurations
          GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
-         FIFO_ADDR_WIDTH_G   => 9,
+         FIFO_ADDR_WIDTH_G   => 10,
          -- AXI Stream Port Configurations
          SLAVE_AXI_CONFIG_G  => PGP4_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => PHY_AXI_CONFIG_G)

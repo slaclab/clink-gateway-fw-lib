@@ -51,7 +51,7 @@ import ClinkFeb         as feb
 class MyKcu1500(pr.Device):
     def __init__(self, 
                  numLanes = 4, 
-                 pgp3     = False, 
+                 pgp4     = False, 
                  **kwargs):
         super().__init__(**kwargs)
             
@@ -59,7 +59,7 @@ class MyKcu1500(pr.Device):
         self.add(lcls2_pgp_fw_lib.hardware.XilinxKcu1500.Kcu1500Hsio( 
             offset    = 0x0080_0000,
             numLanes  = numLanes,
-            pgp3      = pgp3,
+            pgp4      = pgp4,
             expand    = True,
         ))
         
@@ -75,7 +75,7 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
 
     def __init__(self,
                  dev         = '/dev/datadev_0',# path to PCIe device
-                 pgp3        = False,           # true = PGPv3, false = PGP2b
+                 pgp4        = False,           # true = PGPv3, false = PGP2b
                  pollEn      = False, 
                  initRead    = True, 
                  numLanes    = 4,                  
@@ -88,7 +88,7 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
         # Pass custom value to parent via super function
         super().__init__(
             dev         = dev, 
-            pgp3        = pgp3,
+            pgp4        = pgp4,
             pollEn      = pollEn, 
             initRead    = initRead, 
             numLanes    = numLanes, 
@@ -101,7 +101,7 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
         self.add(MyKcu1500(
             memBase  = self.memMap,
             numLanes = numLanes,
-            pgp3     = pgp3,
+            pgp4     = pgp4,
             expand   = True,
         ))          
         
@@ -125,7 +125,7 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
                 self.add(feb.ClinkFeb(      
                     name        = (f'ClinkFeb[{lane}]'), 
                     memBase     = self._srp[lane], 
-                    version3    = pgp3,
+                    version4    = pgp4,
                     enableDeps = [self.MyKcu1500.Kcu1500Hsio.PgpMon[lane].RxRemLinkReady], # Only allow access if the PGP link is established
                 ))        
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     )  
 
     parser.add_argument(
-        "--pgp3", 
+        "--pgp4", 
         type     = argBool,
         required = False,
         default  = False,
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         raise ValueError(f'ERROR: --mcs looks like a PCIe image file (not FEB)' ) 
 
     # Set base
-    base = MyRoot(dev=args.dev,pgp3=args.pgp3)
+    base = MyRoot(dev=args.dev,pgp4=args.pgp4)
 
     # Start the system
     base.start()
