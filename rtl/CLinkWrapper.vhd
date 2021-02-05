@@ -23,7 +23,7 @@ use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
 use surf.AxiLitePkg.all;
 use surf.SsiPkg.all;
-use surf.Pgp3Pkg.all;
+use surf.Pgp4Pkg.all;
 use surf.ClinkPkg.all;
 
 entity CLinkWrapper is
@@ -93,8 +93,8 @@ begin
          UART_READY_EN_G    => true,
          COMMON_AXIL_CLK_G  => true,
          COMMON_DATA_CLK_G  => true,
-         DATA_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C,
-         UART_AXIS_CONFIG_G => PGP3_AXIS_CONFIG_C,
+         DATA_AXIS_CONFIG_G => PGP4_AXIS_CONFIG_C,
+         UART_AXIS_CONFIG_G => PGP4_AXIS_CONFIG_C,
          AXIL_BASE_ADDR_G   => AXIL_BASE_ADDR_G)
       port map (
          -- Clink Ports

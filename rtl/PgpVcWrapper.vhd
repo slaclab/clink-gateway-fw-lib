@@ -22,7 +22,7 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
 use surf.AxiLitePkg.all;
-use surf.Pgp3Pkg.all;
+use surf.Pgp4Pkg.all;
 
 entity PgpVcWrapper is
    generic (
@@ -99,9 +99,9 @@ begin
          VALID_BURST_MODE_G  => true,
          -- FIFO configurations
          GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
-         FIFO_ADDR_WIDTH_G   => 9,
+         FIFO_ADDR_WIDTH_G   => 10,
          -- AXI Stream Port Configurations
-         SLAVE_AXI_CONFIG_G  => PGP3_AXIS_CONFIG_C,
+         SLAVE_AXI_CONFIG_G  => PGP4_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => PHY_AXI_CONFIG_G)
       port map (
          -- Slave Port
@@ -126,7 +126,7 @@ begin
          GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
          FIFO_ADDR_WIDTH_G   => 9,
          -- AXI Stream Port Configurations
-         SLAVE_AXI_CONFIG_G  => PGP3_AXIS_CONFIG_C,
+         SLAVE_AXI_CONFIG_G  => PGP4_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => PHY_AXI_CONFIG_G)
       port map (
          -- Slave Port
@@ -149,7 +149,7 @@ begin
          FIFO_FIXED_THRESH_G => true,
          FIFO_PAUSE_THRESH_G => 128,
          SLAVE_AXI_CONFIG_G  => PHY_AXI_CONFIG_G,
-         MASTER_AXI_CONFIG_G => PGP3_AXIS_CONFIG_C)
+         MASTER_AXI_CONFIG_G => PGP4_AXIS_CONFIG_C)
       port map (
          -- Slave Port
          sAxisClk    => pgpRxClk,

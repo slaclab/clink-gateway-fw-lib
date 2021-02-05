@@ -29,7 +29,7 @@ entity CLinkGateway is
    generic (
       TPD_G        : time                 := 1 ns;
       CHAN_COUNT_G : integer range 1 to 2 := 1;
-      PGP_TYPE_G   : boolean              := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv3@10.3125Gb/s,
+      PGP_TYPE_G   : boolean              := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv4@10.3125Gb/s,
       BUILD_INFO_G : BuildInfoType;
       SIMULATION_G : boolean              := false);
    port (
@@ -120,8 +120,8 @@ architecture mapping of CLinkGateway is
 
 begin
 
-   GEN_PGP3 : if (PGP_TYPE_G = true) generate
-      U_PGP : entity clink_gateway_fw_lib.Pgp3Phy
+   GEN_PGP4 : if (PGP_TYPE_G = true) generate
+      U_PGP : entity clink_gateway_fw_lib.Pgp4Phy
          generic map (
             TPD_G           => TPD_G,
             SIMULATION_G    => SIMULATION_G,

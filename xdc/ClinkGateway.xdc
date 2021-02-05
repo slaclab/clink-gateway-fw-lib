@@ -1,15 +1,15 @@
 ##############################################################################
 ## This file is part of 'Camera link gateway'.
-## It is subject to the license terms in the LICENSE.txt file found in the 
-## top-level directory of this distribution and at: 
-##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
-## No part of 'Camera link gateway', including this file, 
-## may be copied, modified, propagated, or distributed except according to 
+## It is subject to the license terms in the LICENSE.txt file found in the
+## top-level directory of this distribution and at:
+##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+## No part of 'Camera link gateway', including this file,
+## may be copied, modified, propagated, or distributed except according to
 ## the terms contained in the LICENSE.txt file.
 ##############################################################################
 
 # .bit File Configuration
-set_property BITSTREAM.CONFIG.CONFIGRATE 50    [current_design] 
+set_property BITSTREAM.CONFIG.CONFIGRATE 50    [current_design]
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 1   [current_design]
 set_property BITSTREAM.CONFIG.SPI_FALL_EDGE No [current_design]
 
@@ -215,7 +215,7 @@ set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 } [get_ports { tempAler
 
 ##############################################################################
 
-# Timing Constraints 
+# Timing Constraints
 create_clock -name pgpClkP -period 3.200 [get_ports { gtClkP[0] }]
 create_clock -name evrClkP -period 2.691 [get_ports { gtClkP[1] }]
 
@@ -223,33 +223,33 @@ create_clock -name cbl0Half1Clk0 -period 10 [get_ports {cbl0Half1P[0]}]
 create_clock -name cbl1Half0Clk0 -period 10 [get_ports {cbl1Half0P[0]}]
 create_clock -name cbl1Half1Clk0 -period 10 [get_ports {cbl1Half1P[0]}]
 
-create_generated_clock -name dnaClk     [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}] 
-create_generated_clock -name dnaClkInv  [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}] 
-create_generated_clock -name iprogClk   [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_ICAP.Iprog_1/GEN_7SERIES.Iprog7Series_Inst/DIVCLK_GEN.BUFR_ICPAPE2/O}] 
+create_generated_clock -name dnaClk     [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}]
+create_generated_clock -name dnaClkInv  [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}]
+create_generated_clock -name iprogClk   [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_ICAP.Iprog_1/GEN_7SERIES.Iprog7Series_Inst/DIVCLK_GEN.BUFR_ICPAPE2/O}]
 
-create_generated_clock -name refClk200 [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}] 
-create_generated_clock -name axilClk   [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}] 
+create_generated_clock -name refClk200 [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
+create_generated_clock -name axilClk   [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]
 
-create_generated_clock -name cbl0Half1Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl0Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}] 
-create_generated_clock -name cbl0Half1Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl0Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}] 
+create_generated_clock -name cbl0Half1Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl0Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}]
+create_generated_clock -name cbl0Half1Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl0Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}]
 
-create_generated_clock -name cbl1Half0Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_DualCtrlDis.U_Cbl1Half0/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}] 
-create_generated_clock -name cbl1Half0Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_DualCtrlDis.U_Cbl1Half0/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}] 
+create_generated_clock -name cbl1Half0Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_DualCtrlDis.U_Cbl1Half0/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}]
+create_generated_clock -name cbl1Half0Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_DualCtrlDis.U_Cbl1Half0/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}]
 
-create_generated_clock -name cbl1Half1Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl1Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}] 
-create_generated_clock -name cbl1Half1Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl1Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}] 
+create_generated_clock -name cbl1Half1Clk1 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl1Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT0}]
+create_generated_clock -name cbl1Half1Clk2 [get_pins {U_Core/U_CLinkWrapper/U_ClinkTop/U_Cbl1Half1/U_DataShift/U_ClkGen/U_Mmcm/CLKOUT1}]
 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {dnaClk}] -group [get_clocks {dnaClkInv}] -group [get_clocks {iprogClk}] 
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {dnaClk}] -group [get_clocks {dnaClkInv}] -group [get_clocks {iprogClk}]
 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk0}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk1}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk2}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk0}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk1}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk2}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk0}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk1}] 
-set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk2}] 
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk0}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk1}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl0Half1Clk2}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk0}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk1}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half0Clk2}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk0}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk1}]
+set_clock_groups -asynchronous -group [get_clocks {axilClk}] -group [get_clocks {refClk200}] -group [get_clocks {cbl1Half1Clk2}]
 
 # Clink input clock async to derived clocks (for clock input shift)
 set_clock_groups -asynchronous -group [get_clocks {cbl0Half1Clk0}] -group [get_clocks {cbl0Half1Clk2}]
