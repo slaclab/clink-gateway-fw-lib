@@ -70,6 +70,8 @@ end Pgp4Phy;
 
 architecture mapping of Pgp4Phy is
 
+   constant TX_CELL_WORDS_MAX_C : positive := 512;
+
    constant NUM_AXIL_MASTERS_C : natural := 5;
 
    constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, PHY_BASE_ADDR_G, 20, 14);
@@ -77,7 +79,7 @@ architecture mapping of Pgp4Phy is
    signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
+   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
    signal pgpRxIn  : Pgp4RxInArray(1 downto 0)  := (others => PGP4_RX_IN_INIT_C);
    signal pgpRxOut : Pgp4RxOutArray(1 downto 0) := (others => PGP4_RX_OUT_INIT_C);
@@ -156,18 +158,20 @@ begin
 
    U_PGPv4 : entity surf.Pgp4Gtx7Wrapper
       generic map(
-         TPD_G                => TPD_G,
-         ROGUE_SIM_EN_G       => SIMULATION_G,
-         ROGUE_SIM_PORT_NUM_G => 8000,
-         NUM_LANES_G          => 2,
-         NUM_VC_G             => 4,
-         RATE_G               => "10.3125Gbps",
-         REFCLK_FREQ_G        => 312.5E+6,
-         EN_PGP_MON_G         => true,
-         EN_GT_DRP_G          => false,
-         EN_QPLL_DRP_G        => false,
-         AXIL_BASE_ADDR_G     => XBAR_CONFIG_C(0).baseAddr,
-         AXIL_CLK_FREQ_G      => AXI_CLK_FREQ_G)
+         TPD_G                       => TPD_G,
+         ROGUE_SIM_EN_G              => SIMULATION_G,
+         ROGUE_SIM_PORT_NUM_G        => 8000,
+         NUM_LANES_G                 => 2,
+         NUM_VC_G                    => 4,
+         RATE_G                      => "10.3125Gbps",
+         REFCLK_FREQ_G               => 312.5E+6,
+         TX_CELL_WORDS_MAX_G         => TX_CELL_WORDS_MAX_C,
+         TX_MUX_ILEAVE_ON_NOTVALID_G => false,  -- Using store/forward TX buffers
+         EN_PGP_MON_G                => true,
+         EN_GT_DRP_G                 => false,
+         EN_QPLL_DRP_G               => false,
+         AXIL_BASE_ADDR_G            => XBAR_CONFIG_C(0).baseAddr,
+         AXIL_CLK_FREQ_G             => AXI_CLK_FREQ_G)
       port map (
          -- Stable Clock and Reset
          stableClk         => sysClk,
@@ -218,10 +222,11 @@ begin
 
       U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
          generic map (
-            TPD_G            => TPD_G,
-            SIMULATION_G     => SIMULATION_G,
-            GEN_SYNC_FIFO_G  => false,
-            PHY_AXI_CONFIG_G => PGP4_AXIS_CONFIG_C)
+            TPD_G               => TPD_G,
+            SIMULATION_G        => SIMULATION_G,
+            GEN_SYNC_FIFO_G     => false,
+            TX_CELL_WORDS_MAX_G => TX_CELL_WORDS_MAX_C,
+            PHY_AXI_CONFIG_G    => PGP4_AXIS_CONFIG_C)
          port map (
             -- Clocks and Resets
             sysClk          => sysClk,

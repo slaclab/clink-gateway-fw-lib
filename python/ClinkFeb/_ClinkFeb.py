@@ -25,7 +25,7 @@ class ClinkFeb(pr.Device):
             description = "ClinkFeb Container",
             serial      = None,
             camType     = None,
-            version3    = False, # true = PGPv3, false = PGP2b
+            version4    = False, # true = PGPv4, false = PGP2b
             enI2C       = False, # disabled by default to prevent artificial timeouts due to long I2C access latency
             **kwargs):
         super().__init__(name=name, description=description, **kwargs)
@@ -93,8 +93,8 @@ class ClinkFeb(pr.Device):
 
         for i in range(1):
 
-            if (version3):
-                self.add(pgp.Pgp3AxiL(
+            if (version4):
+                self.add(pgp.Pgp4AxiL(
                     name    = (f'PgpMon[{i}]'),
                     offset  = (0x00400000 + i*0x2000),
                     numVc   = 4,
