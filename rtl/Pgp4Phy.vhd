@@ -70,7 +70,7 @@ end Pgp4Phy;
 
 architecture mapping of Pgp4Phy is
 
-   constant TX_CELL_WORDS_MAX_C : positive := 512;
+   constant TX_CELL_WORDS_MAX_C : positive := 128;
 
    constant NUM_AXIL_MASTERS_C : natural := 5;
 
@@ -166,7 +166,6 @@ begin
          RATE_G                      => "10.3125Gbps",
          REFCLK_FREQ_G               => 312.5E+6,
          TX_CELL_WORDS_MAX_G         => TX_CELL_WORDS_MAX_C,
-         TX_MUX_ILEAVE_ON_NOTVALID_G => false,  -- Using store/forward TX buffers
          EN_PGP_MON_G                => true,
          EN_GT_DRP_G                 => false,
          EN_QPLL_DRP_G               => false,
