@@ -43,12 +43,12 @@ import rogue.protocols
 
 import axipcie
 
-import lcls2_pgp_fw_lib.hardware.XilinxKcu1500
-import ClinkFeb         as feb
+import lcls2_pgp_fw_lib.shared as shared
+import ClinkFeb                as feb
 
 #################################################################
 
-class MyKcu1500(pr.Device):
+class ClinkPcie(pr.Device):
     def __init__(self, 
                  numLanes = 4, 
                  pgp4     = False, 
@@ -56,7 +56,7 @@ class MyKcu1500(pr.Device):
         super().__init__(**kwargs)
             
         # PGP Hardware on PCIe 
-        self.add(lcls2_pgp_fw_lib.hardware.XilinxKcu1500.Kcu1500Hsio( 
+        self.add(shared.Hsio( 
             offset    = 0x0080_0000,
             numLanes  = numLanes,
             pgp4      = pgp4,
@@ -71,7 +71,7 @@ class MyKcu1500(pr.Device):
 
 #################################################################
 
-class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
+class MyRoot(shared.Root):
 
     def __init__(self,
                  dev         = '/dev/datadev_0',# path to PCIe device
@@ -98,7 +98,7 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
         self.memMap = axipcie.createAxiPcieMemMap(dev, 'localhost', 8000)            
             
         # Instantiate the top level Device and pass it the memory map
-        self.add(MyKcu1500(
+        self.add(ClinkPcie(
             memBase  = self.memMap,
             numLanes = numLanes,
             pgp4     = pgp4,
@@ -107,6 +107,9 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
         
         # Create DMA streams
         self.dmaStreams = axipcie.createAxiPcieDmaStreams(dev, {lane:{dest for dest in range(4)} for lane in range(numLanes)}, 'localhost', 8000)          
+        
+        # Create empty list
+        self.RemRxLinkReady = [None for i in range(numLanes)]
         
         # Check if not doing simulation
         if (dev != 'sim'):            
@@ -119,14 +122,17 @@ class MyRoot(lcls2_pgp_fw_lib.hardware.shared.Root):
                     
                 # SRP
                 self._srp[lane] = rogue.protocols.srp.SrpV3()
-                pr.streamConnectBiDir(self.dmaStreams[lane][0],self._srp[lane])
+                self.dmaStreams[lane][0] == self._srp[lane]
+                
+                # Add pointer to the list
+                self.RemRxLinkReady[lane] = self.ClinkPcie.Hsio.PgpMon[lane].RxStatus.RemRxLinkReady if pgp4 else self.ClinkPcie.Hsio.PgpMon[lane].RxRemLinkReady                
                          
                 # CameraLink Feb Board
                 self.add(feb.ClinkFeb(      
                     name        = (f'ClinkFeb[{lane}]'), 
                     memBase     = self._srp[lane], 
                     version4    = pgp4,
-                    enableDeps = [self.MyKcu1500.Kcu1500Hsio.PgpMon[lane].RxRemLinkReady], # Only allow access if the PGP link is established
+                    enableDeps  = [self.RemRxLinkReady[lane]], # Only allow access if the PGP link is established
                 ))        
 
 #################################################################
@@ -191,7 +197,7 @@ if __name__ == "__main__":
     AxiVersion = base.ClinkFeb[args.lane].AxiVersion
     PROM       = base.ClinkFeb[args.lane].CypressS25Fl
 
-    if (base.MyKcu1500.Kcu1500Hsio.PgpMon[args.lane].RxRemLinkReady.get()):
+    if (base.RemRxLinkReady[args.lane].get()):
         print ( '###################################################')
         print ( '#                 Old Firmware                    #')
         print ( '###################################################')
