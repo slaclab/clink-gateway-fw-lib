@@ -15,7 +15,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
@@ -36,37 +35,42 @@ entity Pgp2bPhy is
       PHY_BASE_ADDR_G : slv(31 downto 0));
    port (
       -- AXI-Lite Interface (axilClk domain)
-      axilClk          : out sl;
-      axilRst          : out sl;
-      axilReadMasters  : out AxiLiteReadMasterArray(1 downto 0);
-      axilReadSlaves   : in  AxiLiteReadSlaveArray(1 downto 0);
-      axilWriteMasters : out AxiLiteWriteMasterArray(1 downto 0);
-      axilWriteSlaves  : in  AxiLiteWriteSlaveArray(1 downto 0);
+      axilClk         : out sl;
+      axilRst         : out sl;
+      axilReadMaster  : out AxiLiteReadMasterType;
+      axilReadSlave   : in  AxiLiteReadSlaveType;
+      axilWriteMaster : out AxiLiteWriteMasterType;
+      axilWriteSlave  : in  AxiLiteWriteSlaveType;
       -- PHY AXI-Lite Interface (axilClk domain)
-      phyReadMaster    : in  AxiLiteReadMasterType;
-      phyReadSlave     : out AxiLiteReadSlaveType;
-      phyWriteMaster   : in  AxiLiteWriteMasterType;
-      phyWriteSlave    : out AxiLiteWriteSlaveType;
+      phyReadMaster   : in  AxiLiteReadMasterType;
+      phyReadSlave    : out AxiLiteReadSlaveType;
+      phyWriteMaster  : in  AxiLiteWriteMasterType;
+      phyWriteSlave   : out AxiLiteWriteSlaveType;
       -- Camera Data Interface (axilClk domain)
-      dataMasters      : in  AxiStreamMasterArray(1 downto 0);
-      dataSlaves       : out AxiStreamSlaveArray(1 downto 0);
+      dataMaster      : in  AxiStreamMasterType;
+      dataSlave       : out AxiStreamSlaveType;
       -- UART Interface (axilClk domain)
-      txUartMasters    : in  AxiStreamMasterArray(1 downto 0);
-      txUartSlaves     : out AxiStreamSlaveArray(1 downto 0);
-      rxUartMasters    : out AxiStreamMasterArray(1 downto 0);
-      rxUartSlaves     : in  AxiStreamSlaveArray(1 downto 0);
+      txUartMaster    : in  AxiStreamMasterType;
+      txUartSlave     : out AxiStreamSlaveType;
+      rxUartMaster    : out AxiStreamMasterType;
+      rxUartSlave     : in  AxiStreamSlaveType;
+      -- SEM AXIS Interface (axilClk domain)
+      semTxAxisMaster : in  AxiStreamMasterType;
+      semTxAxisSlave  : out AxiStreamSlaveType;
+      semRxAxisMaster : out AxiStreamMasterType;
+      semRxAxisSlave  : in  AxiStreamSlaveType;
       -- Trigger (axilClk domain)
-      pgpTrigger       : out slv(1 downto 0);
+      pgpTrigger      : out slv(1 downto 0);
       -- Stable Reference IDELAY Clock and Reset
-      refClk200MHz     : out sl;
-      refRst200MHz     : out sl;
+      refClk200MHz    : out sl;
+      refRst200MHz    : out sl;
       -- PGP Ports
-      pgpClkP          : in  sl;
-      pgpClkN          : in  sl;
-      pgpRxP           : in  slv(1 downto 0);
-      pgpRxN           : in  slv(1 downto 0);
-      pgpTxP           : out slv(1 downto 0);
-      pgpTxN           : out slv(1 downto 0));
+      pgpClkP         : in  sl;
+      pgpClkN         : in  sl;
+      pgpRxP          : in  sl;
+      pgpRxN          : in  sl;
+      pgpTxP          : out sl;
+      pgpTxN          : out sl);
 end Pgp2bPhy;
 
 architecture mapping of Pgp2bPhy is
@@ -80,17 +84,17 @@ architecture mapping of Pgp2bPhy is
    signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
 
-   signal pgpRxIn  : Pgp2bRxInArray(1 downto 0)  := (others => PGP2B_RX_IN_INIT_C);
-   signal pgpRxOut : Pgp2bRxOutArray(1 downto 0) := (others => PGP2B_RX_OUT_INIT_C);
+   signal pgpRxIn  : Pgp2bRxInType  := PGP2B_RX_IN_INIT_C;
+   signal pgpRxOut : Pgp2bRxOutType := PGP2B_RX_OUT_INIT_C;
 
-   signal pgpTxIn  : Pgp2bTxInArray(1 downto 0)  := (others => PGP2B_TX_IN_INIT_C);
-   signal pgpTxOut : Pgp2bTxOutArray(1 downto 0) := (others => PGP2B_TX_OUT_INIT_C);
+   signal pgpTxIn  : Pgp2bTxInType  := PGP2B_TX_IN_INIT_C;
+   signal pgpTxOut : Pgp2bTxOutType := PGP2B_TX_OUT_INIT_C;
 
-   signal pgpTxMasters : AxiStreamMasterArray(7 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-   signal pgpTxSlaves  : AxiStreamSlaveArray(7 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
-   signal pgpRxMasters : AxiStreamMasterArray(7 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-   signal pgpRxSlaves  : AxiStreamSlaveArray(7 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
-   signal pgpRxCtrl    : AxiStreamCtrlArray(7 downto 0)   := (others => AXI_STREAM_CTRL_UNUSED_C);
+   signal pgpTxMasters : AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
+   signal pgpTxSlaves  : AxiStreamSlaveArray(3 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
+   signal pgpRxMasters : AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
+   signal pgpRxSlaves  : AxiStreamSlaveArray(3 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
+   signal pgpRxCtrl    : AxiStreamCtrlArray(3 downto 0)   := (others => AXI_STREAM_CTRL_UNUSED_C);
 
    signal pgpRefClk         : sl;
    signal pgpRefClkDiv2     : sl;
@@ -103,8 +107,8 @@ architecture mapping of Pgp2bPhy is
    signal pgpTxClk : sl;
    signal pgpTxRst : sl;
 
-   signal pgpRxClk : slv(1 downto 0);
-   signal pgpRxRst : slv(1 downto 0);
+   signal pgpRxClk : sl;
+   signal pgpRxRst : sl;
 
 begin
 
@@ -158,162 +162,146 @@ begin
          rstOut(1) => sysRst,
          rstOut(2) => pgpTxRst);
 
-   U_XBAR : entity surf.AxiLiteCrossbar
+   U_PGP : entity surf.Pgp2bGtx7Fixedlat
+      generic map (
+         TPD_G                 => TPD_G,
+         STABLE_CLOCK_PERIOD_G => 4.0E-9,
+         -- CPLL Configurations
+         TX_PLL_G              => "CPLL",
+         RX_PLL_G              => "CPLL",
+         CPLL_REFCLK_SEL_G     => "001",
+         CPLL_FBDIV_G          => 2,
+         CPLL_FBDIV_45_G       => 5,
+         CPLL_REFCLK_DIV_G     => 1,
+         -- MGT Configurations
+         RXOUT_DIV_G           => 2,
+         TXOUT_DIV_G           => 2,
+         RX_CLK25_DIV_G        => 13,
+         TX_CLK25_DIV_G        => 13,
+         RXDFEXYDEN_G          => '1',
+         RX_DFE_KL_CFG2_G      => x"301148AC",
+         RXCDR_CFG_G           => x"03000023ff10200020",
+         RX_EQUALIZER_G        => "LPM",
+         -- VC Configuration
+         VC_INTERLEAVE_G       => 1)
+      port map (
+         -- GT Clocking
+         stableClk        => pgpRefClkDiv2Bufg,
+         gtCPllRefClk     => pgpRefClk,
+         gtCPllLock       => open,
+         gtQPllRefClk     => '0',
+         gtQPllClk        => '0',
+         gtQPllLock       => '1',
+         gtQPllRefClkLost => '0',
+         gtQPllReset      => open,
+         gtRxRefClkBufg   => '0',
+         gtTxOutClk       => open,
+         -- GT Serial IO
+         gtTxP            => pgpTxP,
+         gtTxN            => pgpTxN,
+         gtRxP            => pgpRxP,
+         gtRxN            => pgpRxN,
+         -- Tx Clocking
+         pgpTxReset       => pgpTxRst,
+         pgpTxClk         => pgpTxClk,
+         -- Rx clocking
+         pgpRxReset       => pgpRxRst,
+         pgpRxRecClk      => pgpRxClk,
+         pgpRxClk         => pgpRxClk,
+         pgpRxMmcmReset   => open,
+         pgpRxMmcmLocked  => '1',
+         -- Non VC TX Signals
+         pgpTxIn          => pgpTxIn,
+         pgpTxOut         => pgpTxOut,
+         -- Non VC RX Signals
+         pgpRxIn          => pgpRxIn,
+         pgpRxOut         => pgpRxOut,
+         -- Frame TX Interface
+         pgpTxMasters     => pgpTxMasters,
+         pgpTxSlaves      => pgpTxSlaves,
+         -- Frame RX Interface
+         pgpRxMasters     => pgpRxMasters,
+         pgpRxCtrl        => pgpRxCtrl);
+
+   U_SyncTrig : entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk     => sysClk,
+         dataIn  => pgpRxOut.opCodeEn,
+         dataOut => pgpTrigger(0));
+
+   pgpTrigger(1) <= '0';
+
+   U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
+      generic map (
+         TPD_G            => TPD_G,
+         SIMULATION_G     => SIMULATION_G,
+         GEN_SYNC_FIFO_G  => false,
+         PHY_AXI_CONFIG_G => SSI_PGP2B_CONFIG_C)
+      port map (
+         -- Clocks and Resets
+         sysClk          => sysClk,
+         sysRst          => sysRst,
+         pgpTxClk        => pgpTxClk,
+         pgpTxRst        => pgpTxRst,
+         pgpRxClk        => pgpRxClk,
+         pgpRxRst        => pgpRxRst,
+         -- AXI-Lite Interface (sysClk domain)
+         axilReadMaster  => axilReadMaster,
+         axilReadSlave   => axilReadSlave,
+         axilWriteMaster => axilWriteMaster,
+         axilWriteSlave  => axilWriteSlave,
+         -- Camera Data Interface (sysClk domain)
+         dataMaster      => dataMaster,
+         dataSlave       => dataSlave,
+         -- UART Interface (sysClk domain)
+         txUartMaster    => txUartMaster,
+         txUartSlave     => txUartSlave,
+         rxUartMaster    => rxUartMaster,
+         rxUartSlave     => rxUartSlave,
+         -- SEM AXIS Interface (sysClk domain)
+         semTxAxisMaster => semTxAxisMaster,
+         semTxAxisSlave  => semTxAxisSlave,
+         semRxAxisMaster => semRxAxisMaster,
+         semRxAxisSlave  => semRxAxisSlave,
+         -- Frame TX Interface (pgpTxClk domain)
+         pgpTxMasters    => pgpTxMasters,
+         pgpTxSlaves     => pgpTxSlaves,
+         -- Frame RX Interface (pgpRxClk domain)
+         pgpRxMasters    => pgpRxMasters,
+         pgpRxCtrl       => pgpRxCtrl,
+         pgpRxSlaves     => pgpRxSlaves);
+
+   --------------
+   -- PGP Monitor
+   --------------
+   U_PgpMon : entity surf.Pgp2bAxi
       generic map (
          TPD_G              => TPD_G,
-         NUM_SLAVE_SLOTS_G  => 1,
-         NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
-         MASTERS_CONFIG_G   => XBAR_CONFIG_C)
+         COMMON_TX_CLK_G    => false,
+         COMMON_RX_CLK_G    => false,
+         WRITE_EN_G         => false,
+         AXI_CLK_FREQ_G     => AXI_CLK_FREQ_G,
+         STATUS_CNT_WIDTH_G => 8,
+         ERROR_CNT_WIDTH_G  => 8)
       port map (
-         axiClk              => sysClk,
-         axiClkRst           => sysRst,
-         sAxiWriteMasters(0) => phyWriteMaster,
-         sAxiWriteSlaves(0)  => phyWriteSlave,
-         sAxiReadMasters(0)  => phyReadMaster,
-         sAxiReadSlaves(0)   => phyReadSlave,
-         mAxiWriteMasters    => phyWriteMasters,
-         mAxiWriteSlaves     => phyWriteSlaves,
-         mAxiReadMasters     => phyReadMasters,
-         mAxiReadSlaves      => phyReadSlaves);
-
-   GEN_VEC :
-   for i in 1 downto 0 generate
-
-      U_PGP : entity surf.Pgp2bGtx7Fixedlat
-         generic map (
-            TPD_G                 => TPD_G,
-            STABLE_CLOCK_PERIOD_G => 4.0E-9,
-            -- CPLL Configurations
-            TX_PLL_G              => "CPLL",
-            RX_PLL_G              => "CPLL",
-            CPLL_REFCLK_SEL_G     => "001",
-            CPLL_FBDIV_G          => 2,
-            CPLL_FBDIV_45_G       => 5,
-            CPLL_REFCLK_DIV_G     => 1,
-            -- MGT Configurations
-            RXOUT_DIV_G           => 2,
-            TXOUT_DIV_G           => 2,
-            RX_CLK25_DIV_G        => 13,
-            TX_CLK25_DIV_G        => 13,
-            RXDFEXYDEN_G          => '1',
-            RX_DFE_KL_CFG2_G      => x"301148AC",
-            RXCDR_CFG_G           => x"03000023ff10200020",
-            RX_EQUALIZER_G        => "LPM",
-            -- VC Configuration
-            VC_INTERLEAVE_G       => 1)
-         port map (
-            -- GT Clocking
-            stableClk        => pgpRefClkDiv2Bufg,
-            gtCPllRefClk     => pgpRefClk,
-            gtCPllLock       => open,
-            gtQPllRefClk     => '0',
-            gtQPllClk        => '0',
-            gtQPllLock       => '1',
-            gtQPllRefClkLost => '0',
-            gtQPllReset      => open,
-            gtRxRefClkBufg   => '0',
-            gtTxOutClk       => open,
-            -- GT Serial IO
-            gtTxP            => pgpTxP(i),
-            gtTxN            => pgpTxN(i),
-            gtRxP            => pgpRxP(i),
-            gtRxN            => pgpRxN(i),
-            -- Tx Clocking
-            pgpTxReset       => pgpTxRst,
-            pgpTxClk         => pgpTxClk,
-            -- Rx clocking
-            pgpRxReset       => pgpRxRst(i),
-            pgpRxRecClk      => pgpRxClk(i),
-            pgpRxClk         => pgpRxClk(i),
-            pgpRxMmcmReset   => open,
-            pgpRxMmcmLocked  => '1',
-            -- Non VC TX Signals
-            pgpTxIn          => pgpTxIn(i),
-            pgpTxOut         => pgpTxOut(i),
-            -- Non VC RX Signals
-            pgpRxIn          => pgpRxIn(i),
-            pgpRxOut         => pgpRxOut(i),
-            -- Frame TX Interface
-            pgpTxMasters     => pgpTxMasters(4*i+3 downto 4*i),
-            pgpTxSlaves      => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface
-            pgpRxMasters     => pgpRxMasters(4*i+3 downto 4*i),
-            pgpRxCtrl        => pgpRxCtrl(4*i+3 downto 4*i));
-
-      U_SyncTrig : entity surf.SynchronizerOneShot
-         generic map (
-            TPD_G => TPD_G)
-         port map (
-            clk     => sysClk,
-            dataIn  => pgpRxOut(i).opCodeEn,
-            dataOut => pgpTrigger(i));
-
-      U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
-         generic map (
-            TPD_G            => TPD_G,
-            SIMULATION_G     => SIMULATION_G,
-            GEN_SYNC_FIFO_G  => false,
-            PHY_AXI_CONFIG_G => SSI_PGP2B_CONFIG_C)
-         port map (
-            -- Clocks and Resets
-            sysClk          => sysClk,
-            sysRst          => sysRst,
-            pgpTxClk        => pgpTxClk,
-            pgpTxRst        => pgpTxRst,
-            pgpRxClk        => pgpRxClk(i),
-            pgpRxRst        => pgpRxRst(i),
-            -- AXI-Lite Interface (sysClk domain)
-            axilReadMaster  => axilReadMasters(i),
-            axilReadSlave   => axilReadSlaves(i),
-            axilWriteMaster => axilWriteMasters(i),
-            axilWriteSlave  => axilWriteSlaves(i),
-            -- Camera Data Interface (sysClk domain)
-            dataMaster      => dataMasters(i),
-            dataSlave       => dataSlaves(i),
-            -- UART Interface (sysClk domain)
-            txUartMaster    => txUartMasters(i),
-            txUartSlave     => txUartSlaves(i),
-            rxUartMaster    => rxUartMasters(i),
-            rxUartSlave     => rxUartSlaves(i),
-            -- Frame TX Interface (pgpTxClk domain)
-            pgpTxMasters    => pgpTxMasters(4*i+3 downto 4*i),
-            pgpTxSlaves     => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface (pgpRxClk domain)
-            pgpRxMasters    => pgpRxMasters(4*i+3 downto 4*i),
-            pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
-            pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));
-
-      --------------
-      -- PGP Monitor
-      --------------
-      U_PgpMon : entity surf.Pgp2bAxi
-         generic map (
-            TPD_G              => TPD_G,
-            COMMON_TX_CLK_G    => false,
-            COMMON_RX_CLK_G    => false,
-            WRITE_EN_G         => false,
-            AXI_CLK_FREQ_G     => AXI_CLK_FREQ_G,
-            STATUS_CNT_WIDTH_G => 8,
-            ERROR_CNT_WIDTH_G  => 8)
-         port map (
-            -- TX PGP Interface (pgpTxClk)
-            pgpTxClk        => pgpTxClk,
-            pgpTxClkRst     => pgpTxRst,
-            pgpTxIn         => pgpTxIn(i),
-            pgpTxOut        => pgpTxOut(i),
-            -- RX PGP Interface (pgpRxClk)
-            pgpRxClk        => pgpRxClk(i),
-            pgpRxClkRst     => pgpRxRst(i),
-            pgpRxIn         => pgpRxIn(i),
-            pgpRxOut        => pgpRxOut(i),
-            -- AXI-Lite Register Interface (axilClk domain)
-            axilClk         => sysClk,
-            axilRst         => sysRst,
-            axilReadMaster  => phyReadMasters((3*i)+0),
-            axilReadSlave   => phyReadSlaves((3*i)+0),
-            axilWriteMaster => phyWriteMasters((3*i)+0),
-            axilWriteSlave  => phyWriteSlaves((3*i)+0));
-
-   end generate GEN_VEC;
+         -- TX PGP Interface (pgpTxClk)
+         pgpTxClk        => pgpTxClk,
+         pgpTxClkRst     => pgpTxRst,
+         pgpTxIn         => pgpTxIn,
+         pgpTxOut        => pgpTxOut,
+         -- RX PGP Interface (pgpRxClk)
+         pgpRxClk        => pgpRxClk,
+         pgpRxClkRst     => pgpRxRst,
+         pgpRxIn         => pgpRxIn,
+         pgpRxOut        => pgpRxOut,
+         -- AXI-Lite Register Interface (axilClk domain)
+         axilClk         => sysClk,
+         axilRst         => sysRst,
+         axilReadMaster  => phyReadMaster,
+         axilReadSlave   => phyReadSlave,
+         axilWriteMaster => phyWriteMaster,
+         axilWriteSlave  => phyWriteSlave);
 
 end mapping;

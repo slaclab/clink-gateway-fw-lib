@@ -17,13 +17,9 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
-
-library unisim;
-use unisim.vcomponents.all;
 
 entity TriggerTop is
    generic (
@@ -41,17 +37,7 @@ entity TriggerTop is
       axilReadMaster  : in  AxiLiteReadMasterType;
       axilReadSlave   : out AxiLiteReadSlaveType;
       axilWriteMaster : in  AxiLiteWriteMasterType;
-      axilWriteSlave  : out AxiLiteWriteSlaveType;
-      -- Timing GPIO Ports
-      timingClkSel    : out sl;
-      timingXbarSel   : out slv(3 downto 0);
-      -- Timing RX Ports
-      timingClkP      : in  sl;
-      timingClkN      : in  sl;
-      timingRxP       : in  slv(1 downto 0);
-      timingRxN       : in  slv(1 downto 0);
-      timingTxP       : out slv(1 downto 0);
-      timingTxN       : out slv(1 downto 0));
+      axilWriteSlave  : out AxiLiteWriteSlaveType);
 end TriggerTop;
 
 architecture mapping of TriggerTop is
@@ -86,37 +72,13 @@ architecture mapping of TriggerTop is
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
-   signal timingClkDiv2 : sl;
-   signal timingClk     : sl;
-
-   signal trigFreq : Slv32Array(1 downto 0);
+   signal trigFreq : Slv32Array(1 downto 0) := (others => (others => '0'));
 
 begin
 
-   timingClkSel  <= '0';
-   timingXbarSel <= x"0";
-
-   U_IBUFDS_GTE2 : IBUFDS_GTE2
-      port map (
-         I     => timingClkP,
-         IB    => timingClkN,
-         CEB   => '0',
-         ODIV2 => timingClkDiv2,
-         O     => timingClk);
-
-   U_TerminateGtx : entity surf.Gtxe2ChannelDummy
-      generic map (
-         TPD_G   => TPD_G,
-         WIDTH_G => 2)
-      port map (
-         refClk => timingClkDiv2,
-         gtRxP  => timingRxP,
-         gtRxN  => timingRxN,
-         gtTxP  => timingTxP,
-         gtTxN  => timingTxN);
-
    GEN_TRIG_FREQ :
-   for i in 1 downto 0 generate
+   -- for i in 0 downto 0 generate
+   for i in 1 downto 0 generate         -- Only using 1 trigger
 
       U_trigFreq : entity surf.SyncTrigRate
          generic map (
@@ -177,15 +139,15 @@ begin
       axiSlaveRegister (axilEp, x"0FC", 0, v.cntRst(0));
 
       -------------------------------------------------------------------------------
-      axiSlaveRegister (axilEp, x"100", 0, v.enable(1));
-      axiSlaveRegister (axilEp, x"104", 0, v.inv(1));
-      axiSlaveRegister (axilEp, x"108", 0, v.trigMap(1));
-      axiSlaveRegister (axilEp, x"10C", 0, v.ccCntSize(1));
-      axiSlaveRegister (axilEp, x"110", 0, v.ccTrigMask(1));
+      -- axiSlaveRegister (axilEp, x"100", 0, v.enable(1));
+      -- axiSlaveRegister (axilEp, x"104", 0, v.inv(1));
+      -- axiSlaveRegister (axilEp, x"108", 0, v.trigMap(1));
+      -- axiSlaveRegister (axilEp, x"10C", 0, v.ccCntSize(1));
+      -- axiSlaveRegister (axilEp, x"110", 0, v.ccTrigMask(1));
 
-      axiSlaveRegisterR(axilEp, x"1F4", 0, trigFreq(1));
-      axiSlaveRegisterR(axilEp, x"1F8", 0, r.trigCnt(1));
-      axiSlaveRegister (axilEp, x"1FC", 0, v.cntRst(1));
+      -- axiSlaveRegisterR(axilEp, x"1F4", 0, trigFreq(1));
+      -- axiSlaveRegisterR(axilEp, x"1F8", 0, r.trigCnt(1));
+      -- axiSlaveRegister (axilEp, x"1FC", 0, v.cntRst(1));
       -------------------------------------------------------------------------------
 
       -- Close out the transaction

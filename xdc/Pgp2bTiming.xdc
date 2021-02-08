@@ -14,14 +14,13 @@ set_clock_groups -asynchronous \
    -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] \
    -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]]
 
-create_clock -period 6.400 -name pgpRxClk0 [get_pins {U_Core/GEN_PGP2b.U_PGP/GEN_VEC[0].U_PGP/Gtx7Core_1/gtxe2_i/RXOUTCLK}]
-create_clock -period 6.400 -name pgpRxClk1 [get_pins {U_Core/GEN_PGP2b.U_PGP/GEN_VEC[1].U_PGP/Gtx7Core_1/gtxe2_i/RXOUTCLK}]
+create_clock -period 6.400 -name pgpRxClk [get_pins {U_Core/GEN_PGP2b.U_PGP/U_PGP/Gtx7Core_1/gtxe2_i/RXOUTCLK}]
 
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1]] -group [get_clocks pgpRxClk0]
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1]] -group [get_clocks pgpRxClk1]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1]] -group [get_clocks pgpRxClk]
 
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] -group [get_clocks pgpRxClk0]
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] -group [get_clocks pgpRxClk1]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2]] -group [get_clocks pgpRxClk]
 
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]] -group [get_clocks pgpRxClk0]
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]] -group [get_clocks pgpRxClk1]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_IBUFDS_GTE2/ODIV2]] -group [get_clocks pgpRxClk]
+
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0]] -group [get_clocks -of_objects [get_pins U_Core/U_semClk100MHz/O]]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins U_Core/GEN_PGP2b.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1]] -group [get_clocks -of_objects [get_pins U_Core/U_semClk100MHz/O]]

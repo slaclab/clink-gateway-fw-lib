@@ -35,66 +35,62 @@ entity Pgp4Phy is
       PHY_BASE_ADDR_G : slv(31 downto 0));
    port (
       -- AXI-Lite Interface (axilClk domain)
-      axilClk          : out sl;
-      axilRst          : out sl;
-      axilReadMasters  : out AxiLiteReadMasterArray(1 downto 0);
-      axilReadSlaves   : in  AxiLiteReadSlaveArray(1 downto 0);
-      axilWriteMasters : out AxiLiteWriteMasterArray(1 downto 0);
-      axilWriteSlaves  : in  AxiLiteWriteSlaveArray(1 downto 0);
+      axilClk         : out sl;
+      axilRst         : out sl;
+      axilReadMaster  : out AxiLiteReadMasterType;
+      axilReadSlave   : in  AxiLiteReadSlaveType;
+      axilWriteMaster : out AxiLiteWriteMasterType;
+      axilWriteSlave  : in  AxiLiteWriteSlaveType;
       -- PHY AXI-Lite Interface (axilClk domain)
-      phyReadMaster    : in  AxiLiteReadMasterType;
-      phyReadSlave     : out AxiLiteReadSlaveType;
-      phyWriteMaster   : in  AxiLiteWriteMasterType;
-      phyWriteSlave    : out AxiLiteWriteSlaveType;
+      phyReadMaster   : in  AxiLiteReadMasterType;
+      phyReadSlave    : out AxiLiteReadSlaveType;
+      phyWriteMaster  : in  AxiLiteWriteMasterType;
+      phyWriteSlave   : out AxiLiteWriteSlaveType;
       -- Camera Data Interface (axilClk domain)
-      dataMasters      : in  AxiStreamMasterArray(1 downto 0);
-      dataSlaves       : out AxiStreamSlaveArray(1 downto 0);
+      dataMaster      : in  AxiStreamMasterType;
+      dataSlave       : out AxiStreamSlaveType;
       -- UART Interface (axilClk domain)
-      txUartMasters    : in  AxiStreamMasterArray(1 downto 0);
-      txUartSlaves     : out AxiStreamSlaveArray(1 downto 0);
-      rxUartMasters    : out AxiStreamMasterArray(1 downto 0);
-      rxUartSlaves     : in  AxiStreamSlaveArray(1 downto 0);
+      txUartMaster    : in  AxiStreamMasterType;
+      txUartSlave     : out AxiStreamSlaveType;
+      rxUartMaster    : out AxiStreamMasterType;
+      rxUartSlave     : in  AxiStreamSlaveType;
+      -- SEM AXIS Interface (axilClk domain)
+      semTxAxisMaster : in  AxiStreamMasterType;
+      semTxAxisSlave  : out AxiStreamSlaveType;
+      semRxAxisMaster : out AxiStreamMasterType;
+      semRxAxisSlave  : in  AxiStreamSlaveType;
       -- Trigger (axilClk domain)
-      pgpTrigger       : out slv(1 downto 0);
+      pgpTrigger      : out slv(1 downto 0);
       -- Stable Reference IDELAY Clock and Reset
-      refClk200MHz     : out sl;
-      refRst200MHz     : out sl;
+      refClk200MHz    : out sl;
+      refRst200MHz    : out sl;
       -- PGP Ports
-      pgpClkP          : in  sl;
-      pgpClkN          : in  sl;
-      pgpRxP           : in  slv(1 downto 0);
-      pgpRxN           : in  slv(1 downto 0);
-      pgpTxP           : out slv(1 downto 0);
-      pgpTxN           : out slv(1 downto 0));
+      pgpClkP         : in  sl;
+      pgpClkN         : in  sl;
+      pgpRxP          : in  sl;
+      pgpRxN          : in  sl;
+      pgpTxP          : out sl;
+      pgpTxN          : out sl);
 end Pgp4Phy;
 
 architecture mapping of Pgp4Phy is
 
    constant TX_CELL_WORDS_MAX_C : positive := 128;
 
-   constant NUM_AXIL_MASTERS_C : natural := 5;
+   signal pgpRxIn  : Pgp4RxInArray(0 downto 0)  := (others => PGP4_RX_IN_INIT_C);
+   signal pgpRxOut : Pgp4RxOutArray(0 downto 0) := (others => PGP4_RX_OUT_INIT_C);
 
-   constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, PHY_BASE_ADDR_G, 20, 14);
+   signal pgpTxIn  : Pgp4TxInArray(0 downto 0)  := (others => PGP4_TX_IN_INIT_C);
+   signal pgpTxOut : Pgp4TxOutArray(0 downto 0) := (others => PGP4_TX_OUT_INIT_C);
 
-   signal phyReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
-   signal phyWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal phyWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
+   signal pgpTxMasters : AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
+   signal pgpTxSlaves  : AxiStreamSlaveArray(3 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
+   signal pgpRxMasters : AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
+   signal pgpRxSlaves  : AxiStreamSlaveArray(3 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
+   signal pgpRxCtrl    : AxiStreamCtrlArray(3 downto 0)   := (others => AXI_STREAM_CTRL_UNUSED_C);
 
-   signal pgpRxIn  : Pgp4RxInArray(1 downto 0)  := (others => PGP4_RX_IN_INIT_C);
-   signal pgpRxOut : Pgp4RxOutArray(1 downto 0) := (others => PGP4_RX_OUT_INIT_C);
-
-   signal pgpTxIn  : Pgp4TxInArray(1 downto 0)  := (others => PGP4_TX_IN_INIT_C);
-   signal pgpTxOut : Pgp4TxOutArray(1 downto 0) := (others => PGP4_TX_OUT_INIT_C);
-
-   signal pgpTxMasters : AxiStreamMasterArray(7 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-   signal pgpTxSlaves  : AxiStreamSlaveArray(7 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
-   signal pgpRxMasters : AxiStreamMasterArray(7 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-   signal pgpRxSlaves  : AxiStreamSlaveArray(7 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
-   signal pgpRxCtrl    : AxiStreamCtrlArray(7 downto 0)   := (others => AXI_STREAM_CTRL_UNUSED_C);
-
-   signal pgpClk : slv(1 downto 0);
-   signal pgpRst : slv(1 downto 0);
+   signal pgpClk : slv(0 downto 0);
+   signal pgpRst : slv(0 downto 0);
 
    signal pgpRefClkDiv2    : sl;
    signal pgpRefClkDiv2Rst : sl;
@@ -138,48 +134,30 @@ begin
          rstOut(0) => refRst200MHz,
          rstOut(1) => sysRst);
 
-   U_XBAR : entity surf.AxiLiteCrossbar
-      generic map (
-         TPD_G              => TPD_G,
-         NUM_SLAVE_SLOTS_G  => 1,
-         NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
-         MASTERS_CONFIG_G   => XBAR_CONFIG_C)
-      port map (
-         axiClk              => sysClk,
-         axiClkRst           => sysRst,
-         sAxiWriteMasters(0) => phyWriteMaster,
-         sAxiWriteSlaves(0)  => phyWriteSlave,
-         sAxiReadMasters(0)  => phyReadMaster,
-         sAxiReadSlaves(0)   => phyReadSlave,
-         mAxiWriteMasters    => phyWriteMasters,
-         mAxiWriteSlaves     => phyWriteSlaves,
-         mAxiReadMasters     => phyReadMasters,
-         mAxiReadSlaves      => phyReadSlaves);
-
    U_PGPv4 : entity surf.Pgp4Gtx7Wrapper
       generic map(
-         TPD_G                       => TPD_G,
-         ROGUE_SIM_EN_G              => SIMULATION_G,
-         ROGUE_SIM_PORT_NUM_G        => 8000,
-         NUM_LANES_G                 => 2,
-         NUM_VC_G                    => 4,
-         RATE_G                      => "10.3125Gbps",
-         REFCLK_FREQ_G               => 312.5E+6,
-         TX_CELL_WORDS_MAX_G         => TX_CELL_WORDS_MAX_C,
-         EN_PGP_MON_G                => true,
-         EN_GT_DRP_G                 => false,
-         EN_QPLL_DRP_G               => false,
-         AXIL_BASE_ADDR_G            => XBAR_CONFIG_C(0).baseAddr,
-         AXIL_CLK_FREQ_G             => AXI_CLK_FREQ_G)
+         TPD_G                => TPD_G,
+         ROGUE_SIM_EN_G       => SIMULATION_G,
+         ROGUE_SIM_PORT_NUM_G => 8000,
+         NUM_LANES_G          => 1,
+         NUM_VC_G             => 4,
+         RATE_G               => "6.25Gbps",
+         REFCLK_FREQ_G        => 312.5E+6,
+         TX_CELL_WORDS_MAX_G  => TX_CELL_WORDS_MAX_C,
+         EN_PGP_MON_G         => true,
+         EN_GT_DRP_G          => false,
+         EN_QPLL_DRP_G        => false,
+         AXIL_BASE_ADDR_G     => PHY_BASE_ADDR_G,
+         AXIL_CLK_FREQ_G      => AXI_CLK_FREQ_G)
       port map (
          -- Stable Clock and Reset
          stableClk         => sysClk,
          stableRst         => sysRst,
          -- Gt Serial IO
-         pgpGtTxP          => pgpTxP,
-         pgpGtTxN          => pgpTxN,
-         pgpGtRxP          => pgpRxP,
-         pgpGtRxN          => pgpRxN,
+         pgpGtTxP(0)       => pgpTxP,
+         pgpGtTxN(0)       => pgpTxN,
+         pgpGtRxP(0)       => pgpRxP,
+         pgpGtRxN(0)       => pgpRxN,
          -- GT Clocking
          pgpRefClkP        => pgpClkP,
          pgpRefClkN        => pgpClkN,
@@ -203,58 +181,60 @@ begin
          -- AXI-Lite Register Interface (axilClk domain)
          axilClk           => sysClk,
          axilRst           => sysRst,
-         axilReadMaster    => phyReadMasters(0),
-         axilReadSlave     => phyReadSlaves(0),
-         axilWriteMaster   => phyWriteMasters(0),
-         axilWriteSlave    => phyWriteSlaves(0));
+         axilReadMaster    => phyReadMaster,
+         axilReadSlave     => phyReadSlave,
+         axilWriteMaster   => phyWriteMaster,
+         axilWriteSlave    => phyWriteSlave);
 
-   GEN_VEC :
-   for i in 1 downto 0 generate
+   U_SyncTrig : entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk     => sysClk,
+         dataIn  => pgpRxOut(0).opCodeEn,
+         dataOut => pgpTrigger(0));
 
-      U_SyncTrig : entity surf.SynchronizerOneShot
-         generic map (
-            TPD_G => TPD_G)
-         port map (
-            clk     => sysClk,
-            dataIn  => pgpRxOut(i).opCodeEn,
-            dataOut => pgpTrigger(i));
+   pgpTrigger(1) <= '0';
 
-      U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
-         generic map (
-            TPD_G               => TPD_G,
-            SIMULATION_G        => SIMULATION_G,
-            GEN_SYNC_FIFO_G     => false,
-            TX_CELL_WORDS_MAX_G => TX_CELL_WORDS_MAX_C,
-            PHY_AXI_CONFIG_G    => PGP4_AXIS_CONFIG_C)
-         port map (
-            -- Clocks and Resets
-            sysClk          => sysClk,
-            sysRst          => sysRst,
-            pgpTxClk        => pgpClk(i),
-            pgpTxRst        => pgpRst(i),
-            pgpRxClk        => pgpClk(i),
-            pgpRxRst        => pgpRst(i),
-            -- AXI-Lite Interface (sysClk domain)
-            axilReadMaster  => axilReadMasters(i),
-            axilReadSlave   => axilReadSlaves(i),
-            axilWriteMaster => axilWriteMasters(i),
-            axilWriteSlave  => axilWriteSlaves(i),
-            -- Camera Data Interface (sysClk domain)
-            dataMaster      => dataMasters(i),
-            dataSlave       => dataSlaves(i),
-            -- UART Interface (sysClk domain)
-            txUartMaster    => txUartMasters(i),
-            txUartSlave     => txUartSlaves(i),
-            rxUartMaster    => rxUartMasters(i),
-            rxUartSlave     => rxUartSlaves(i),
-            -- Frame TX Interface (pgpTxClk domain)
-            pgpTxMasters    => pgpTxMasters(4*i+3 downto 4*i),
-            pgpTxSlaves     => pgpTxSlaves(4*i+3 downto 4*i),
-            -- Frame RX Interface (pgpRxClk domain)
-            pgpRxMasters    => pgpRxMasters(4*i+3 downto 4*i),
-            pgpRxCtrl       => pgpRxCtrl(4*i+3 downto 4*i),
-            pgpRxSlaves     => pgpRxSlaves(4*i+3 downto 4*i));
-
-   end generate GEN_VEC;
+   U_PgpVcWrapper : entity clink_gateway_fw_lib.PgpVcWrapper
+      generic map (
+         TPD_G               => TPD_G,
+         SIMULATION_G        => SIMULATION_G,
+         GEN_SYNC_FIFO_G     => false,
+         TX_CELL_WORDS_MAX_G => TX_CELL_WORDS_MAX_C,
+         PHY_AXI_CONFIG_G    => PGP4_AXIS_CONFIG_C)
+      port map (
+         -- Clocks and Resets
+         sysClk          => sysClk,
+         sysRst          => sysRst,
+         pgpTxClk        => pgpClk(0),
+         pgpTxRst        => pgpRst(0),
+         pgpRxClk        => pgpClk(0),
+         pgpRxRst        => pgpRst(0),
+         -- AXI-Lite Interface (sysClk domain)
+         axilReadMaster  => axilReadMaster,
+         axilReadSlave   => axilReadSlave,
+         axilWriteMaster => axilWriteMaster,
+         axilWriteSlave  => axilWriteSlave,
+         -- Camera Data Interface (sysClk domain)
+         dataMaster      => dataMaster,
+         dataSlave       => dataSlave,
+         -- UART Interface (sysClk domain)
+         txUartMaster    => txUartMaster,
+         txUartSlave     => txUartSlave,
+         rxUartMaster    => rxUartMaster,
+         rxUartSlave     => rxUartSlave,
+         -- SEM AXIS Interface (sysClk domain)
+         semTxAxisMaster => semTxAxisMaster,
+         semTxAxisSlave  => semTxAxisSlave,
+         semRxAxisMaster => semRxAxisMaster,
+         semRxAxisSlave  => semRxAxisSlave,
+         -- Frame TX Interface (pgpTxClk domain)
+         pgpTxMasters    => pgpTxMasters,
+         pgpTxSlaves     => pgpTxSlaves,
+         -- Frame RX Interface (pgpRxClk domain)
+         pgpRxMasters    => pgpRxMasters,
+         pgpRxCtrl       => pgpRxCtrl,
+         pgpRxSlaves     => pgpRxSlaves);
 
 end mapping;

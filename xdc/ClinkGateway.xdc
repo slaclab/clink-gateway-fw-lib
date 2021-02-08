@@ -225,7 +225,6 @@ create_clock -name cbl1Half1Clk0 -period 10 [get_ports {cbl1Half1P[0]}]
 
 create_generated_clock -name dnaClk     [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}]
 create_generated_clock -name dnaClkInv  [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}]
-create_generated_clock -name iprogClk   [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_ICAP.Iprog_1/GEN_7SERIES.Iprog7Series_Inst/DIVCLK_GEN.BUFR_ICPAPE2/O}]
 
 create_generated_clock -name refClk200 [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
 create_generated_clock -name axilClk   [get_pins -hier -filter {NAME =~ *.U_PGP/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]

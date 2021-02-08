@@ -70,6 +70,12 @@ class ClinkFeb(pr.Device):
             expand      = False,
         ))
 
+        self.add(feb.Sem(
+            name        = 'Sem',
+            offset      = 0x00008000,
+            expand      = False,
+        ))
+
         self.add(cl.ClinkTop(
             offset      = 0x00100000,
             serial      = self._serial,
