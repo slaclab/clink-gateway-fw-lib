@@ -122,14 +122,6 @@ class Sem(pr.Device):
             base=pr.UInt,
             function=pr.BaseCommand.touchOne))
 
-        self.add(pr.RemoteVariable(
-            name         = 'FpgaIndex',
-            description  = 'FPGA Index',
-            offset       = 0xFC,
-            bitSize      = 4,
-            mode         = 'RW',
-        ))
-
         @self.command(description='Direct a transition to the IDLE state through the Injection interface')
         def InjectIdleState():
             self.InjectAddrHigh.set(0xE00>>1)
