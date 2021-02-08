@@ -17,7 +17,6 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
@@ -55,13 +54,13 @@ entity CLinkWrapper is
       -- Camera Control Bits
       camCtrl         : in    Slv4Array(1 downto 0);
       -- Camera Data Interface
-      dataMasters     : out   AxiStreamMasterArray(1 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-      dataSlaves      : in    AxiStreamSlaveArray(1 downto 0);
+      dataMaster      : out   AxiStreamMasterType;
+      dataSlave       : in    AxiStreamSlaveType;
       -- UART Interface
-      rxUartMasters   : in    AxiStreamMasterArray(1 downto 0);
-      rxUartSlaves    : out   AxiStreamSlaveArray(1 downto 0)  := (others => AXI_STREAM_SLAVE_FORCE_C);
-      txUartMasters   : out   AxiStreamMasterArray(1 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
-      txUartSlaves    : in    AxiStreamSlaveArray(1 downto 0);
+      rxUartMaster    : in    AxiStreamMasterType;
+      rxUartSlave     : out   AxiStreamSlaveType;
+      txUartMaster    : out   AxiStreamMasterType;
+      txUartSlave     : in    AxiStreamSlaveType;
       -- Axi-Lite Interface
       axilClk         : in    sl;
       axilRst         : in    sl;
@@ -73,15 +72,6 @@ end CLinkWrapper;
 
 architecture mapping of CLinkWrapper is
 
-   signal txMasterA : AxiStreamMasterArray(CHAN_COUNT_G-1 downto 0);
-   signal txSlaveA  : AxiStreamSlaveArray(CHAN_COUNT_G-1 downto 0);
-
-   signal txMasterB : AxiStreamMasterArray(CHAN_COUNT_G-1 downto 0);
-   signal txSlaveB  : AxiStreamSlaveArray(CHAN_COUNT_G-1 downto 0);
-
-   signal txMasterC : AxiStreamMasterArray(CHAN_COUNT_G-1 downto 0);
-   signal txSlaveC  : AxiStreamSlaveArray(CHAN_COUNT_G-1 downto 0);
-
    signal camStatus : ClChanStatusArray(1 downto 0);
 
 begin
@@ -89,7 +79,7 @@ begin
    U_ClinkTop : entity surf.ClinkTop
       generic map (
          TPD_G              => TPD_G,
-         CHAN_COUNT_G       => CHAN_COUNT_G,
+         CHAN_COUNT_G       => 1,
          UART_READY_EN_G    => true,
          COMMON_AXIL_CLK_G  => true,
          COMMON_DATA_CLK_G  => true,
@@ -117,20 +107,20 @@ begin
          sysClk          => axilClk,
          sysRst          => axilRst,
          -- Camera Control Bits & status, async
-         camCtrl         => camCtrl(CHAN_COUNT_G-1 downto 0),
+         camCtrl(0)      => camCtrl(0),
          camStatus       => camStatus,
          -- Camera data
          dataClk         => axilClk,
          dataRst         => axilRst,
-         dataMasters     => dataMasters(CHAN_COUNT_G-1 downto 0),
-         dataSlaves      => dataSlaves(CHAN_COUNT_G-1 downto 0),
+         dataMasters(0)  => dataMaster,
+         dataSlaves(0)   => dataSlave,
          -- UART data
          uartClk         => axilClk,
          uartRst         => axilRst,
-         sUartMasters    => rxUartMasters(CHAN_COUNT_G-1 downto 0),
-         sUartSlaves     => rxUartSlaves(CHAN_COUNT_G-1 downto 0),
-         mUartMasters    => txUartMasters(CHAN_COUNT_G-1 downto 0),
-         mUartSlaves     => txUartSlaves(CHAN_COUNT_G-1 downto 0),
+         sUartMasters(0) => rxUartMaster,
+         sUartSlaves(0)  => rxUartSlave,
+         mUartMasters(0) => txUartMaster,
+         mUartSlaves(0)  => txUartSlave,
          -- Axi-Lite Interface
          axilClk         => axilClk,
          axilRst         => axilRst,
@@ -155,19 +145,9 @@ begin
          ledBlu(0) <= '1';
       end if;
 
-      if CHAN_COUNT_G = 1 then
-         ledRed(1) <= '1';
-         ledGrn(1) <= '1';
-         ledBlu(1) <= '1';
-      elsif camStatus(1).running = '1' then
-         ledRed(1) <= '1';
-         ledGrn(1) <= '0';
-         ledBlu(1) <= '1';
-      else
-         ledRed(1) <= '0';
-         ledGrn(1) <= '1';
-         ledBlu(1) <= '1';
-      end if;
+      ledRed(1) <= '1';
+      ledGrn(1) <= '1';
+      ledBlu(1) <= '1';
 
    end process;
 

@@ -17,11 +17,13 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
 use surf.I2cPkg.all;
+
+library clink_gateway_fw_lib;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -41,6 +43,14 @@ entity FpgaSystem is
       axilReadSlave   : out   AxiLiteReadSlaveType;
       axilWriteMaster : in    AxiLiteWriteMasterType;
       axilWriteSlave  : out   AxiLiteWriteSlaveType;
+      -- SEM AXIS Interface (axilClk domain)
+      semTxAxisMaster : out   AxiStreamMasterType;
+      semTxAxisSlave  : in    AxiStreamSlaveType;
+      semRxAxisMaster : in    AxiStreamMasterType;
+      semRxAxisSlave  : out   AxiStreamSlaveType;
+      -- Stable Reference SEM Clock and Reset
+      semClk100MHz    : in    sl;
+      semRst100MHz    : in    sl;
       -- Boot Memory Ports
       bootCsL         : out   sl;
       bootMosi        : out   sl;
@@ -59,13 +69,14 @@ end FpgaSystem;
 
 architecture mapping of FpgaSystem is
 
-   constant NUM_AXIL_MASTERS_C : natural := 8;
+   constant NUM_AXIL_MASTERS_C : natural := 9;
 
    constant VERSION_INDEX_C  : natural := 0;
    constant BOOT_MEM_INDEX_C : natural := 1;
    constant PWR_INDEX_C      : natural := 2;
    constant XADC_INDEX_C     : natural := 3;
    constant SFP_INDEX_C      : natural := 4;  -- [4:7]
+   constant SEM_INDEX_C      : natural := 8;
 
    constant XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXIL_MASTERS_C, AXI_BASE_ADDR_G, 16, 12);
 
@@ -90,6 +101,9 @@ architecture mapping of FpgaSystem is
 
    signal bootSck    : sl;
    signal userValues : Slv32Array(0 to 63) := (others => X"00000000");
+
+   signal fpgaReload     : sl;
+   signal fpgaReloadAddr : slv(31 downto 0);
 
 begin
 
@@ -124,13 +138,15 @@ begin
          CLK_PERIOD_G    => (1.0/AXI_CLK_FREQ_G),
          XIL_DEVICE_G    => "7SERIES",
          EN_DEVICE_DNA_G => true,
-         EN_ICAP_G       => true)
+         EN_ICAP_G       => false)   -- Located in the SEM
       port map (
          -- AXI-Lite Register Interface
          axiClk         => axilClk,
          axiRst         => axilRst,
          fdSerSdio      => fdSerSdio,
          userValues     => userValues,
+         fpgaReload     => fpgaReload,
+         fpgaReloadAddr => fpgaReloadAddr,
          axiReadMaster  => axilReadMasters(VERSION_INDEX_C),
          axiReadSlave   => axilReadSlaves(VERSION_INDEX_C),
          axiWriteMaster => axilWriteMasters(VERSION_INDEX_C),
@@ -241,6 +257,31 @@ begin
                axilClk         => axilClk,
                axilRst         => axilRst);
       end generate GEN_VEC;
+
+      U_SEM : entity clink_gateway_fw_lib.FebSemWrapper
+         generic map (
+            TPD_G => TPD_G)
+         port map (
+            -- Stable Reference SEM Clock and Reset
+            semClk          => semClk100MHz,
+            semClkRst       => semRst100MHz,
+            -- AXI-Lite Interface (axilClk domain)
+            axilClk         => axilClk,
+            axilRst         => axilRst,
+            axilReadMaster  => axilReadMasters(SEM_INDEX_C),
+            axilReadSlave   => axilReadSlaves(SEM_INDEX_C),
+            axilWriteMaster => axilWriteMasters(SEM_INDEX_C),
+            axilWriteSlave  => axilWriteSlaves(SEM_INDEX_C),
+            -- IPROG Interface (axilClk domain)
+            fpgaReload      => fpgaReload,
+            fpgaReloadAddr  => fpgaReloadAddr,
+            -- SEM AXIS Interface (axisClk domain)
+            axisClk         => axilClk,
+            axisRst         => axilRst,
+            semTxAxisMaster => semTxAxisMaster,
+            semTxAxisSlave  => semTxAxisSlave,
+            semRxAxisMaster => semRxAxisMaster,
+            semRxAxisSlave  => semRxAxisSlave);
 
    end generate;
 

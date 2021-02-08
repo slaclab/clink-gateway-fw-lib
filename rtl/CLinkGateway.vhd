@@ -17,7 +17,6 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
@@ -25,25 +24,27 @@ use surf.AxiLitePkg.all;
 
 library clink_gateway_fw_lib;
 
+library unisim;
+use unisim.vcomponents.all;
+
 entity CLinkGateway is
    generic (
-      TPD_G        : time                 := 1 ns;
-      CHAN_COUNT_G : integer range 1 to 2 := 1;
-      PGP_TYPE_G   : boolean              := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv4@10.3125Gb/s,
+      TPD_G        : time    := 1 ns;
+      PGP_TYPE_G   : boolean := false;  -- False: PGPv2b@3.125Gb/s, True: PGPv4@6.25Gb/s,
       BUILD_INFO_G : BuildInfoType;
-      SIMULATION_G : boolean              := false);
+      SIMULATION_G : boolean := false);
    port (
       -- Clink Ports
-      cbl0Half0P    : inout slv(4 downto 0);         --  2,  4,  5,  6, 3
-      cbl0Half0M    : inout slv(4 downto 0);         -- 15, 17, 18, 19 16
-      cbl0Half1P    : inout slv(4 downto 0);         --  8, 10, 11, 12,  9
-      cbl0Half1M    : inout slv(4 downto 0);         -- 21, 23, 24, 25, 22
+      cbl0Half0P    : inout slv(4 downto 0);  --  2,  4,  5,  6, 3
+      cbl0Half0M    : inout slv(4 downto 0);  -- 15, 17, 18, 19 16
+      cbl0Half1P    : inout slv(4 downto 0);  --  8, 10, 11, 12,  9
+      cbl0Half1M    : inout slv(4 downto 0);  -- 21, 23, 24, 25, 22
       cbl0SerP      : out   sl;         -- 20
       cbl0SerM      : out   sl;         -- 7
-      cbl1Half0P    : inout slv(4 downto 0);         --  2,  4,  5,  6, 3
-      cbl1Half0M    : inout slv(4 downto 0);         -- 15, 17, 18, 19 16
-      cbl1Half1P    : inout slv(4 downto 0);         --  8, 10, 11, 12,  9
-      cbl1Half1M    : inout slv(4 downto 0);         -- 21, 23, 24, 25, 22
+      cbl1Half0P    : inout slv(4 downto 0);  --  2,  4,  5,  6, 3
+      cbl1Half0M    : inout slv(4 downto 0);  -- 15, 17, 18, 19 16
+      cbl1Half1P    : inout slv(4 downto 0);  --  8, 10, 11, 12,  9
+      cbl1Half1M    : inout slv(4 downto 0);  -- 21, 23, 24, 25, 22
       cbl1SerP      : out   sl;         -- 20
       cbl1SerM      : out   sl;         -- 7
       -- LEDs
@@ -95,28 +96,39 @@ architecture mapping of CLinkGateway is
    signal axilWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_SLVERR_C);
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
-   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0) := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
+   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_SLVERR_C);
 
-   signal axilClk           : sl;
-   signal axilRst           : sl;
-   signal mAxilReadMasters  : AxiLiteReadMasterArray(1 downto 0);
-   signal mAxilReadSlaves   : AxiLiteReadSlaveArray(1 downto 0);
-   signal mAxilWriteMasters : AxiLiteWriteMasterArray(1 downto 0);
-   signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(1 downto 0);
+   signal axilClk          : sl;
+   signal axilRst          : sl;
+   signal mAxilReadMaster  : AxiLiteReadMasterType;
+   signal mAxilReadSlave   : AxiLiteReadSlaveType;
+   signal mAxilWriteMaster : AxiLiteWriteMasterType;
+   signal mAxilWriteSlave  : AxiLiteWriteSlaveType;
 
    signal refClk200MHz : sl;
    signal refRst200MHz : sl;
 
-   signal dataMasters : AxiStreamMasterArray(1 downto 0);
-   signal dataSlaves  : AxiStreamSlaveArray(1 downto 0);
+   signal dataMaster : AxiStreamMasterType;
+   signal dataSlave  : AxiStreamSlaveType;
 
-   signal txUartMasters : AxiStreamMasterArray(1 downto 0);
-   signal txUartSlaves  : AxiStreamSlaveArray(1 downto 0);
-   signal rxUartMasters : AxiStreamMasterArray(1 downto 0);
-   signal rxUartSlaves  : AxiStreamSlaveArray(1 downto 0);
+   signal txUartMaster : AxiStreamMasterType;
+   signal txUartSlave  : AxiStreamSlaveType;
+   signal rxUartMaster : AxiStreamMasterType;
+   signal rxUartSlave  : AxiStreamSlaveType;
 
    signal pgpTrigger : slv(1 downto 0);
    signal camCtrl    : Slv4Array(1 downto 0);
+
+   signal semTxAxisMaster : AxiStreamMasterType;
+   signal semTxAxisSlave  : AxiStreamSlaveType;
+   signal semRxAxisMaster : AxiStreamMasterType;
+   signal semRxAxisSlave  : AxiStreamSlaveType;
+
+   signal semClk100MHz : sl;
+   signal semRst100MHz : sl;
+
+   signal gtClk     : sl;
+   signal gtClkDiv2 : sl;
 
 begin
 
@@ -129,37 +141,42 @@ begin
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (
             -- AXI-Lite Interface (axilClk domain)
-            axilClk          => axilClk,
-            axilRst          => axilRst,
-            axilReadMasters  => mAxilReadMasters,
-            axilReadSlaves   => mAxilReadSlaves,
-            axilWriteMasters => mAxilWriteMasters,
-            axilWriteSlaves  => mAxilWriteSlaves,
+            axilClk         => axilClk,
+            axilRst         => axilRst,
+            axilReadMaster  => mAxilReadMaster,
+            axilReadSlave   => mAxilReadSlave,
+            axilWriteMaster => mAxilWriteMaster,
+            axilWriteSlave  => mAxilWriteSlave,
             -- PHY AXI-Lite Interface (axilClk domain)
-            phyReadMaster    => axilReadMasters(PGP_INDEX_C),
-            phyReadSlave     => axilReadSlaves(PGP_INDEX_C),
-            phyWriteMaster   => axilWriteMasters(PGP_INDEX_C),
-            phyWriteSlave    => axilWriteSlaves(PGP_INDEX_C),
+            phyReadMaster   => axilReadMasters(PGP_INDEX_C),
+            phyReadSlave    => axilReadSlaves(PGP_INDEX_C),
+            phyWriteMaster  => axilWriteMasters(PGP_INDEX_C),
+            phyWriteSlave   => axilWriteSlaves(PGP_INDEX_C),
             -- Camera Data Interface
-            dataMasters      => dataMasters,
-            dataSlaves       => dataSlaves,
+            dataMaster      => dataMaster,
+            dataSlave       => dataSlave,
             -- UART Interface
-            txUartMasters    => txUartMasters,
-            txUartSlaves     => txUartSlaves,
-            rxUartMasters    => rxUartMasters,
-            rxUartSlaves     => rxUartSlaves,
+            txUartMaster    => txUartMaster,
+            txUartSlave     => txUartSlave,
+            rxUartMaster    => rxUartMaster,
+            rxUartSlave     => rxUartSlave,
+            -- SEM AXIS Interface (axilClk domain)
+            semTxAxisMaster => semTxAxisMaster,
+            semTxAxisSlave  => semTxAxisSlave,
+            semRxAxisMaster => semRxAxisMaster,
+            semRxAxisSlave  => semRxAxisSlave,
             -- Trigger and Link Status
-            pgpTrigger       => pgpTrigger,
+            pgpTrigger      => pgpTrigger,
             -- Stable Reference IDELAY Clock and Reset
-            refClk200MHz     => refClk200MHz,
-            refRst200MHz     => refRst200MHz,
+            refClk200MHz    => refClk200MHz,
+            refRst200MHz    => refRst200MHz,
             -- PGP Ports
-            pgpClkP          => gtClkP(0),
-            pgpClkN          => gtClkN(0),
-            pgpRxP           => gtRxP(1 downto 0),
-            pgpRxN           => gtRxN(1 downto 0),
-            pgpTxP           => gtTxP(1 downto 0),
-            pgpTxN           => gtTxN(1 downto 0));
+            pgpClkP         => gtClkP(0),
+            pgpClkN         => gtClkN(0),
+            pgpRxP          => gtRxP(0),
+            pgpRxN          => gtRxN(0),
+            pgpTxP          => gtTxP(0),
+            pgpTxN          => gtTxN(0));
    end generate;
 
    GEN_PGP2b : if (PGP_TYPE_G = false) generate
@@ -171,37 +188,42 @@ begin
             PHY_BASE_ADDR_G => XBAR_CONFIG_C(PGP_INDEX_C).baseAddr)
          port map (
             -- AXI-Lite Interface (axilClk domain)
-            axilClk          => axilClk,
-            axilRst          => axilRst,
-            axilReadMasters  => mAxilReadMasters,
-            axilReadSlaves   => mAxilReadSlaves,
-            axilWriteMasters => mAxilWriteMasters,
-            axilWriteSlaves  => mAxilWriteSlaves,
+            axilClk         => axilClk,
+            axilRst         => axilRst,
+            axilReadMaster  => mAxilReadMaster,
+            axilReadSlave   => mAxilReadSlave,
+            axilWriteMaster => mAxilWriteMaster,
+            axilWriteSlave  => mAxilWriteSlave,
             -- PHY AXI-Lite Interface (axilClk domain)
-            phyReadMaster    => axilReadMasters(PGP_INDEX_C),
-            phyReadSlave     => axilReadSlaves(PGP_INDEX_C),
-            phyWriteMaster   => axilWriteMasters(PGP_INDEX_C),
-            phyWriteSlave    => axilWriteSlaves(PGP_INDEX_C),
+            phyReadMaster   => axilReadMasters(PGP_INDEX_C),
+            phyReadSlave    => axilReadSlaves(PGP_INDEX_C),
+            phyWriteMaster  => axilWriteMasters(PGP_INDEX_C),
+            phyWriteSlave   => axilWriteSlaves(PGP_INDEX_C),
             -- Camera Data Interface
-            dataMasters      => dataMasters,
-            dataSlaves       => dataSlaves,
+            dataMaster      => dataMaster,
+            dataSlave       => dataSlave,
             -- UART Interface
-            txUartMasters    => txUartMasters,
-            txUartSlaves     => txUartSlaves,
-            rxUartMasters    => rxUartMasters,
-            rxUartSlaves     => rxUartSlaves,
+            txUartMaster    => txUartMaster,
+            txUartSlave     => txUartSlave,
+            rxUartMaster    => rxUartMaster,
+            rxUartSlave     => rxUartSlave,
+            -- SEM AXIS Interface (axilClk domain)
+            semTxAxisMaster => semTxAxisMaster,
+            semTxAxisSlave  => semTxAxisSlave,
+            semRxAxisMaster => semRxAxisMaster,
+            semRxAxisSlave  => semRxAxisSlave,
             -- Trigger and Link Status
-            pgpTrigger       => pgpTrigger,
+            pgpTrigger      => pgpTrigger,
             -- Stable Reference IDELAY Clock and Reset
-            refClk200MHz     => refClk200MHz,
-            refRst200MHz     => refRst200MHz,
+            refClk200MHz    => refClk200MHz,
+            refRst200MHz    => refRst200MHz,
             -- PGP Ports
-            pgpClkP          => gtClkP(0),
-            pgpClkN          => gtClkN(0),
-            pgpRxP           => gtRxP(1 downto 0),
-            pgpRxN           => gtRxN(1 downto 0),
-            pgpTxP           => gtTxP(1 downto 0),
-            pgpTxN           => gtTxN(1 downto 0));
+            pgpClkP         => gtClkP(0),
+            pgpClkN         => gtClkN(0),
+            pgpRxP          => gtRxP(0),
+            pgpRxN          => gtRxN(0),
+            pgpTxP          => gtTxP(0),
+            pgpTxN          => gtTxN(0));
    end generate;
 
    --------------------------
@@ -210,20 +232,20 @@ begin
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
-         NUM_SLAVE_SLOTS_G  => 2,
+         NUM_SLAVE_SLOTS_G  => 1,
          NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
          MASTERS_CONFIG_G   => XBAR_CONFIG_C)
       port map (
-         axiClk           => axilClk,
-         axiClkRst        => axilRst,
-         sAxiWriteMasters => mAxilWriteMasters,
-         sAxiWriteSlaves  => mAxilWriteSlaves,
-         sAxiReadMasters  => mAxilReadMasters,
-         sAxiReadSlaves   => mAxilReadSlaves,
-         mAxiWriteMasters => axilWriteMasters,
-         mAxiWriteSlaves  => axilWriteSlaves,
-         mAxiReadMasters  => axilReadMasters,
-         mAxiReadSlaves   => axilReadSlaves);
+         axiClk              => axilClk,
+         axiClkRst           => axilRst,
+         sAxiWriteMasters(0) => mAxilWriteMaster,
+         sAxiWriteSlaves(0)  => mAxilWriteSlave,
+         sAxiReadMasters(0)  => mAxilReadMaster,
+         sAxiReadSlaves(0)   => mAxilReadSlave,
+         mAxiWriteMasters    => axilWriteMasters,
+         mAxiWriteSlaves     => axilWriteSlaves,
+         mAxiReadMasters     => axilReadMasters,
+         mAxiReadSlaves      => axilReadSlaves);
 
    -----------------
    -- System Modules
@@ -243,6 +265,14 @@ begin
          axilReadSlave   => axilReadSlaves(SYS_INDEX_C),
          axilWriteMaster => axilWriteMasters(SYS_INDEX_C),
          axilWriteSlave  => axilWriteSlaves(SYS_INDEX_C),
+         -- SEM AXIS Interface (axilClk domain)
+         semTxAxisMaster => semTxAxisMaster,
+         semTxAxisSlave  => semTxAxisSlave,
+         semRxAxisMaster => semRxAxisMaster,
+         semRxAxisSlave  => semRxAxisSlave,
+         -- Stable Reference SEM Clock and Reset
+         semClk100MHz    => semClk100MHz,
+         semRst100MHz    => semRst100MHz,
          -- Boot Memory Ports
          bootCsL         => bootCsL,
          bootMosi        => bootMosi,
@@ -264,7 +294,6 @@ begin
    U_CLinkWrapper : entity clink_gateway_fw_lib.CLinkWrapper
       generic map (
          TPD_G            => TPD_G,
-         CHAN_COUNT_G     => CHAN_COUNT_G,
          AXIL_BASE_ADDR_G => XBAR_CONFIG_C(CLINK_INDEX_C).baseAddr)
       port map (
          -- Clink Ports
@@ -290,13 +319,13 @@ begin
          -- Camera Control Bits
          camCtrl         => camCtrl,
          -- Camera Data Interface
-         dataMasters     => dataMasters,
-         dataSlaves      => dataSlaves,
+         dataMaster      => dataMaster,
+         dataSlave       => dataSlave,
          -- UART Interface
-         txUartMasters   => txUartMasters,
-         txUartSlaves    => txUartSlaves,
-         rxUartMasters   => rxUartMasters,
-         rxUartSlaves    => rxUartSlaves,
+         txUartMaster    => txUartMaster,
+         txUartSlave     => txUartSlave,
+         rxUartMaster    => rxUartMaster,
+         rxUartSlave     => rxUartSlave,
          -- Axi-Lite Interface
          axilClk         => axilClk,
          axilRst         => axilRst,
@@ -324,16 +353,51 @@ begin
          axilReadMaster  => axilReadMasters(TIMING_INDEX_C),
          axilReadSlave   => axilReadSlaves(TIMING_INDEX_C),
          axilWriteMaster => axilWriteMasters(TIMING_INDEX_C),
-         axilWriteSlave  => axilWriteSlaves(TIMING_INDEX_C),
-         -- Timing GPIO Ports
-         timingClkSel    => timingClkSel,
-         timingXbarSel   => timingXbarSel,
-         -- Timing RX Ports
-         timingClkP      => gtClkP(1),
-         timingClkN      => gtClkN(1),
-         timingRxP       => gtRxP(3 downto 2),
-         timingRxN       => gtRxN(3 downto 2),
-         timingTxP       => gtTxP(3 downto 2),
-         timingTxN       => gtTxN(3 downto 2));
+         axilWriteSlave  => axilWriteSlaves(TIMING_INDEX_C));
+
+   ----------------------------
+   -- Terminate MISC Interfaces
+   ----------------------------
+   timingClkSel  <= '0';
+   timingXbarSel <= x"0";
+
+   U_IBUFDS_GTE2 : IBUFDS_GTE2
+      port map (
+         I     => gtClkP(1),
+         IB    => gtClkN(1),
+         CEB   => '0',
+         ODIV2 => gtClkDiv2,
+         O     => gtClk);
+
+   U_TerminateGtx : entity surf.Gtxe2ChannelDummy
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 3)
+      port map (
+         refClk => gtClkDiv2,
+         gtRxP  => gtRxP(3 downto 1),
+         gtRxN  => gtRxN(3 downto 1),
+         gtTxP  => gtTxP(3 downto 1),
+         gtTxN  => gtTxN(3 downto 1));
+
+   ----------------------
+   -- SEM Clock and Reset
+   ----------------------
+   U_semClk100MHz : BUFR
+      generic map (
+         BUFR_DIVIDE => "2")
+      port map (
+         CE  => '1',
+         CLR => '0',
+         I   => refClk200MHz,
+         O   => semClk100MHz);
+
+   U_semRst100MHz : entity surf.RstSync
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk      => semClk100MHz,
+         asyncRst => refRst200MHz,
+         syncRst  => semRst100MHz);
 
 end mapping;

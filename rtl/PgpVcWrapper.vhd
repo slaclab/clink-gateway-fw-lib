@@ -17,7 +17,6 @@ use ieee.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
-
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiStreamPkg.all;
@@ -52,6 +51,11 @@ entity PgpVcWrapper is
       txUartSlave     : out AxiStreamSlaveType;
       rxUartMaster    : out AxiStreamMasterType;
       rxUartSlave     : in  AxiStreamSlaveType;
+      -- SEM AXIS Interface (sysClk domain)
+      semTxAxisMaster : in  AxiStreamMasterType;
+      semTxAxisSlave  : out AxiStreamSlaveType;
+      semRxAxisMaster : out AxiStreamMasterType;
+      semRxAxisSlave  : in  AxiStreamSlaveType;
       -- Frame TX Interface (pgpTxClk domain)
       pgpTxMasters    : out AxiStreamMasterArray(3 downto 0) := (others => AXI_STREAM_MASTER_INIT_C);
       pgpTxSlaves     : in  AxiStreamSlaveArray(3 downto 0);
@@ -125,7 +129,7 @@ begin
          VALID_BURST_MODE_G  => true,
          -- FIFO configurations
          GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
-         FIFO_ADDR_WIDTH_G   => 10,
+         FIFO_ADDR_WIDTH_G   => 9,
          -- AXI Stream Port Configurations
          SLAVE_AXI_CONFIG_G  => PGP4_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => PHY_AXI_CONFIG_G)
@@ -163,5 +167,53 @@ begin
          mAxisRst    => sysRst,
          mAxisMaster => rxUartMaster,
          mAxisSlave  => rxUartSlave);
+
+   U_Vc3_Tx : entity surf.AxiStreamFifoV2
+      generic map (
+         -- General Configurations
+         TPD_G               => TPD_G,
+         SLAVE_READY_EN_G    => true,
+         VALID_THOLD_G       => TX_CELL_WORDS_MAX_G,
+         VALID_BURST_MODE_G  => true,
+         -- FIFO configurations
+         GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
+         FIFO_ADDR_WIDTH_G   => 9,
+         -- AXI Stream Port Configurations
+         SLAVE_AXI_CONFIG_G  => PGP4_AXIS_CONFIG_C,
+         MASTER_AXI_CONFIG_G => PHY_AXI_CONFIG_G)
+      port map (
+         -- Slave Port
+         sAxisClk    => sysClk,
+         sAxisRst    => sysRst,
+         sAxisMaster => semTxAxisMaster,
+         sAxisSlave  => semTxAxisSlave,
+         -- Master Port
+         mAxisClk    => pgpTxClk,
+         mAxisRst    => pgpTxRst,
+         mAxisMaster => pgpTxMasters(3),
+         mAxisSlave  => pgpTxSlaves(3));
+
+   U_Vc3_Rx : entity surf.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         SLAVE_READY_EN_G    => SIMULATION_G,
+         GEN_SYNC_FIFO_G     => GEN_SYNC_FIFO_G,
+         FIFO_ADDR_WIDTH_G   => 9,
+         FIFO_FIXED_THRESH_G => true,
+         FIFO_PAUSE_THRESH_G => 128,
+         SLAVE_AXI_CONFIG_G  => PHY_AXI_CONFIG_G,
+         MASTER_AXI_CONFIG_G => PGP4_AXIS_CONFIG_C)
+      port map (
+         -- Slave Port
+         sAxisClk    => pgpRxClk,
+         sAxisRst    => pgpRxRst,
+         sAxisMaster => pgpRxMasters(3),
+         sAxisSlave  => pgpRxSlaves(3),
+         sAxisCtrl   => pgpRxCtrl(3),
+         -- Master Port
+         mAxisClk    => sysClk,
+         mAxisRst    => sysRst,
+         mAxisMaster => semRxAxisMaster,
+         mAxisSlave  => semRxAxisSlave);
 
 end mapping;
