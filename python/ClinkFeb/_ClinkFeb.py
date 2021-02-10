@@ -100,10 +100,10 @@ class ClinkFeb(pr.Device):
                 expand  = False,
             ))
 
-            # self.add(pgp.Pgp4AxiL(
-                # name    = 'PgpMon[1]',
-                # offset  = 0x0041000,
-                # numVc   = 4,
-                # writeEn = True,
-                # expand  = False,
-            # ))
+            self.add(pgp.Pgp4AxiL(
+                name    = 'PgpMon[1]',
+                offset  = 0x00410000,
+                numVc   = 4,
+                writeEn = True,
+                expand  = False,
+            ))
