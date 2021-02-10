@@ -130,8 +130,8 @@ class MyRoot(shared.Root):
                 # CameraLink Feb Board
                 self.add(feb.ClinkFeb(      
                     name        = (f'ClinkFeb[{lane}]'), 
-                    memBase     = self._srp[lane], 
-                    version4    = pgp4,
+                    memBase     = self._srp[lane],
+                    promLoad    = True,
                     enableDeps  = [self.RemRxLinkReady[lane]], # Only allow access if the PGP link is established
                 ))        
 

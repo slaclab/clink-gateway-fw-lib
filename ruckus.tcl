@@ -18,18 +18,10 @@ if { [info exists ::env(OVERRIDE_SUBMODULE_LOCKS)] != 1 || $::env(OVERRIDE_SUBMO
 }
 
 # Load local source Code
-loadSource -lib clink_gateway_fw_lib      -dir "$::DIR_PATH/rtl"
+loadSource -lib clink_gateway_fw_lib -dir "$::DIR_PATH/rtl"
 
 # Load local source Code
-loadConstraints -path "$::DIR_PATH/xdc/ClinkGateway.xdc"
-
-# Case the timing on communication protocol
-if { [info exists ::env(INCLUDE_PGP4_6G)] != 1 || $::env(INCLUDE_PGP4_6G) == 0 } {
-   loadConstraints -path "$::DIR_PATH/xdc/Pgp2bTiming.xdc"
-} else {
-   loadConstraints -path "$::DIR_PATH/xdc/Pgp4Timing.xdc"
-
-}
+loadConstraints -dir "$::DIR_PATH/xdc"
 
 # Add IP cores
 loadIpCore -dir "$::DIR_PATH/ip"

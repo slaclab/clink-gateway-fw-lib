@@ -27,8 +27,7 @@ use surf.ClinkPkg.all;
 
 entity CLinkWrapper is
    generic (
-      TPD_G            : time                 := 1 ns;
-      CHAN_COUNT_G     : integer range 1 to 2 := 1;
+      TPD_G            : time := 1 ns;
       AXIL_BASE_ADDR_G : slv(31 downto 0));
    port (
       -- Clink Ports
@@ -44,15 +43,13 @@ entity CLinkWrapper is
       cbl1Half1M      : inout slv(4 downto 0);  -- 21, 23, 24, 25, 22
       cbl1SerP        : out   sl;               -- 20
       cbl1SerM        : out   sl;               -- 7
-      -- LEDs
-      ledRed          : out   slv(1 downto 0);
-      ledGrn          : out   slv(1 downto 0);
-      ledBlu          : out   slv(1 downto 0);
+      -- CLINK Status
+      clinkUp         : out   sl;
       -- Stable Reference IDELAY Clock and Reset
       refClk200MHz    : in    sl;
       refRst200MHz    : in    sl;
       -- Camera Control Bits
-      camCtrl         : in    Slv4Array(1 downto 0);
+      camCtrl         : in    slv(3 downto 0);
       -- Camera Data Interface
       dataMaster      : out   AxiStreamMasterType;
       dataSlave       : in    AxiStreamSlaveType;
@@ -107,7 +104,7 @@ begin
          sysClk          => axilClk,
          sysRst          => axilRst,
          -- Camera Control Bits & status, async
-         camCtrl(0)      => camCtrl(0),
+         camCtrl(0)      => camCtrl,
          camStatus       => camStatus,
          -- Camera data
          dataClk         => axilClk,
@@ -129,26 +126,6 @@ begin
          axilWriteMaster => axilWriteMaster,
          axilWriteSlave  => axilWriteSlave);
 
-   ----------------
-   -- Misc. Signals
-   ----------------
-   process (camStatus)
-   begin
-
-      if camStatus(0).running = '1' then
-         ledRed(0) <= '1';
-         ledGrn(0) <= '0';
-         ledBlu(0) <= '1';
-      else
-         ledRed(0) <= '0';
-         ledGrn(0) <= '1';
-         ledBlu(0) <= '1';
-      end if;
-
-      ledRed(1) <= '1';
-      ledGrn(1) <= '1';
-      ledBlu(1) <= '1';
-
-   end process;
+   clinkUp <= camStatus(0).running;
 
 end mapping;
