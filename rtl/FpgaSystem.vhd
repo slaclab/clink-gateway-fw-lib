@@ -138,7 +138,7 @@ begin
          CLK_PERIOD_G    => (1.0/AXI_CLK_FREQ_G),
          XIL_DEVICE_G    => "7SERIES",
          EN_DEVICE_DNA_G => true,
-         EN_ICAP_G       => false)   -- Located in the SEM
+         EN_ICAP_G       => false)      -- Located in the SEM
       port map (
          -- AXI-Lite Register Interface
          axiClk         => axilClk,
