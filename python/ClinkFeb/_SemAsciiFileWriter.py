@@ -17,11 +17,11 @@ import os
 import threading
 
 class SemAsciiFileWriter(rogue.interfaces.stream.Slave):
-    def __init__(self, index=0):
+    def __init__(self, index=0, dumpDir='seu'):
         rogue.interfaces.stream.Slave.__init__(self)
 
         now = datetime.datetime.now()
-        fpath = os.path.abspath(now.strftime(f'seu/SEU_Monitor[{index}]-%Y%m%d_%H%M%S.dat'))
+        fpath = os.path.abspath(now.strftime(f'{dumpDir}/SEU_Monitor[{index}]-%Y%m%d_%H%M%S.dat'))
         print(f'fpath: {fpath}')
 
         self.dataFile = open(fpath, 'a')
