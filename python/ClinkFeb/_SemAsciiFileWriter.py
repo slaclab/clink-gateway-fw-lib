@@ -17,7 +17,7 @@ import os
 import threading
 
 class SemAsciiFileWriter(rogue.interfaces.stream.Slave):
-    def __init__(self, index=0, dumpDir=`seu`):
+    def __init__(self, index=0, dumpDir='seu'):
         rogue.interfaces.stream.Slave.__init__(self)
 
         now = datetime.datetime.now()
