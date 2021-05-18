@@ -50,22 +50,21 @@ import ClinkFeb                as feb
 
 class ClinkPcie(pr.Device):
     def __init__(self, 
-                 numLanes = 4, 
                  pgp4     = False, 
                  **kwargs):
         super().__init__(**kwargs)
             
         # PGP Hardware on PCIe 
         self.add(shared.Hsio( 
-            offset    = 0x0080_0000,
-            numLanes  = numLanes,
-            pgp4      = pgp4,
-            expand    = True,
+            offset     = 0x0080_0000,
+            laneConfig = {0: 'NULL',1: 'NULL',2: 'NULL',3: 'NULL'},
+            pgp4       = pgp4,
+            expand     = True,
         ))
         
         self.add(axipcie.AxiPcieCore(
             offset      = 0x0000_0000,
-            numDmaLanes = numLanes,
+            numDmaLanes = 4,
             expand      = False,
         ))  
 
@@ -77,8 +76,7 @@ class MyRoot(shared.Root):
                  dev         = '/dev/datadev_0',# path to PCIe device
                  pgp4        = False,           # true = PGPv3, false = PGP2b
                  pollEn      = False, 
-                 initRead    = True, 
-                 numLanes    = 4,                  
+                 initRead    = True,
                  **kwargs):
 
         # Check for simulation
@@ -90,35 +88,33 @@ class MyRoot(shared.Root):
             dev         = dev, 
             pgp4        = pgp4,
             pollEn      = pollEn, 
-            initRead    = initRead, 
-            numLanes    = numLanes, 
+            initRead    = initRead,
             **kwargs)
         
         # Create memory interface
-        self.memMap = axipcie.createAxiPcieMemMap(dev, 'localhost', 8000)            
+        self.memMap = axipcie.createAxiPcieMemMap(dev, 'localhost', 8000)
             
         # Instantiate the top level Device and pass it the memory map
         self.add(ClinkPcie(
             memBase  = self.memMap,
-            numLanes = numLanes,
             pgp4     = pgp4,
             expand   = True,
         ))          
         
         # Create DMA streams
-        self.dmaStreams = axipcie.createAxiPcieDmaStreams(dev, {lane:{dest for dest in range(4)} for lane in range(numLanes)}, 'localhost', 8000)          
+        self.dmaStreams = axipcie.createAxiPcieDmaStreams(dev, {lane:{dest for dest in range(4)} for lane in range(4)}, 'localhost', 8000)
         
         # Create empty list
-        self.RemRxLinkReady = [None for i in range(numLanes)]
+        self.RemRxLinkReady = [None for i in range(4)]
         
         # Check if not doing simulation
         if (dev != 'sim'):            
             
             # Create arrays to be filled
-            self._srp = [None for lane in range(numLanes)]
+            self._srp = [None for lane in range(4)]
             
             # Create the stream interface
-            for lane in range(numLanes):
+            for lane in range(4):
                     
                 # SRP
                 self._srp[lane] = rogue.protocols.srp.SrpV3()
