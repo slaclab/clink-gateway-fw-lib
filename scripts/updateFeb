@@ -153,9 +153,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pgp4", 
         type     = argBool,
-        required = False,
-        default  = False,
-        help     = "true = PGPv4, false = PGP2b",
+        required = True,
+        help     = "False = PGP2b, True = PGPv4",
     ) 
 
     parser.add_argument(
