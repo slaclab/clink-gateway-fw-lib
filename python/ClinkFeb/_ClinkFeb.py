@@ -19,6 +19,8 @@ import surf.protocols.clink as cl
 import surf.protocols.pgp   as pgp
 import ClinkFeb             as feb
 
+import surf.devices.transceivers as xceiver
+
 class ClinkFeb(pr.Device):
     def __init__(   self,
             name        = "ClinkFeb",
@@ -50,28 +52,37 @@ class ClinkFeb(pr.Device):
 
         else:
 
-            if enI2C:
+            self.add(nxp.Sa56004x(
+                name        = 'BoardTemp',
+                description = 'This device monitors the board temperature and FPGA junction temperature',
+                offset      = 0x00002000,
+                expand      = False,
+                enabled     = False, # enabled=False because I2C are slow transactions and might "log jam" register transaction pipeline
+            ))
 
-                self.add(nxp.Sa56004x(
-                    name        = 'BoardTemp',
-                    description = 'This device monitors the board temperature and FPGA junction temperature',
-                    offset      = 0x00002000,
-                    expand      = False,
-                ))
-
-                self.add(linear.Ltc4151(
-                    name        = 'BoardPwr',
-                    description = 'This device monitors the board power, input voltage and input current',
-                    offset      = 0x00002400,
-                    senseRes    = 20.E-3, # Units of Ohms
-                    expand      = False,
-                ))
+            self.add(linear.Ltc4151(
+                name        = 'BoardPwr',
+                description = 'This device monitors the board power, input voltage and input current',
+                offset      = 0x00002400,
+                senseRes    = 20.E-3, # Units of Ohms
+                expand      = False,
+                enabled     = False, # enabled=False because I2C are slow transactions and might "log jam" register transaction pipeline
+            ))
 
             self.add(xil.Xadc(
                 name        = 'Xadc',
                 offset      = 0x00003000,
                 expand      = False,
             ))
+
+            for i in range(4):
+                self.add(xceiver.Sff8472(
+                    name         = f'Sfp[{i}]',
+                    offset       = 0x00004000+i*0x00001000,
+                    diagnostics  = True,
+                    expand       = False,
+                    enabled      = False, # enabled=False because I2C are slow transactions and might "log jam" register transaction pipeline
+                ))
 
             self.add(feb.Sem(
                 name        = 'Sem',
@@ -94,16 +105,20 @@ class ClinkFeb(pr.Device):
             ))
 
             self.add(pgp.Pgp2bAxi(
-                name    = 'PgpMon[0]',
-                offset  = 0x00400000,
-                writeEn = False,
-                expand  = False,
+                name            = 'PgpMon[0]',
+                offset          = 0x00400000,
+                statusCountBits = 8,
+                errorCountBits  = 8,
+                writeEn         = False,
+                expand          = False,
             ))
 
             self.add(pgp.Pgp4AxiL(
-                name    = 'PgpMon[1]',
-                offset  = 0x00410000,
-                numVc   = 4,
-                writeEn = True,
-                expand  = False,
+                name            = 'PgpMon[1]',
+                offset          = 0x00410000,
+                numVc           = 4,
+                statusCountBits = 16,
+                errorCountBits  = 8,
+                writeEn         = False,
+                expand          = True,
             ))
