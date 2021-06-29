@@ -181,6 +181,10 @@ begin
          rstOut(1) => sysRst,
          rstOut(2) => pgpTxRst(0));
 
+   -- Using Variable Latency PGP2b
+   pgpRxClk(0) <= pgpTxClk(0);
+   pgpRxRst(0) <= pgpTxRst(0);
+
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
@@ -199,28 +203,25 @@ begin
          mAxiReadMasters     => phyReadMasters,
          mAxiReadSlaves      => phyReadSlaves);
 
-   U_PGP2b : entity surf.Pgp2bGtx7Fixedlat
+   U_PGP2b : entity surf.Pgp2bGtx7VarLat
       generic map (
-         TPD_G                 => TPD_G,
-         STABLE_CLOCK_PERIOD_G => 4.0E-9,
+         TPD_G             => TPD_G,
          -- CPLL Configurations
-         TX_PLL_G              => "CPLL",
-         RX_PLL_G              => "CPLL",
-         CPLL_REFCLK_SEL_G     => "001",
-         CPLL_FBDIV_G          => 2,
-         CPLL_FBDIV_45_G       => 5,
-         CPLL_REFCLK_DIV_G     => 1,
+         TX_PLL_G          => "CPLL",
+         RX_PLL_G          => "CPLL",
+         CPLL_REFCLK_SEL_G => "001",
+         CPLL_FBDIV_G      => 2,
+         CPLL_FBDIV_45_G   => 5,
+         CPLL_REFCLK_DIV_G => 1,
          -- MGT Configurations
-         RXOUT_DIV_G           => 2,
-         TXOUT_DIV_G           => 2,
-         RX_CLK25_DIV_G        => 13,
-         TX_CLK25_DIV_G        => 13,
-         RXDFEXYDEN_G          => '1',
-         RX_DFE_KL_CFG2_G      => x"301148AC",
-         RXCDR_CFG_G           => x"03000023ff10200020",
-         RX_EQUALIZER_G        => "LPM",
+         RXOUT_DIV_G       => 2,
+         TXOUT_DIV_G       => 2,
+         RX_CLK25_DIV_G    => 13,
+         TX_CLK25_DIV_G    => 13,
+         RXDFEXYDEN_G      => '1',
+         RX_DFE_KL_CFG2_G  => x"301148AC",
          -- VC Configuration
-         VC_INTERLEAVE_G       => 1)
+         VC_INTERLEAVE_G   => 1)
       port map (
          -- GT Clocking
          stableClk        => pgpRefClkDiv2,
@@ -231,8 +232,6 @@ begin
          gtQPllLock       => '1',
          gtQPllRefClkLost => '0',
          gtQPllReset      => open,
-         gtRxRefClkBufg   => '0',
-         gtTxOutClk       => open,
          -- GT Serial IO
          gtTxP            => pgpTxP(0),
          gtTxN            => pgpTxN(0),
@@ -240,10 +239,13 @@ begin
          gtRxN            => pgpRxN(0),
          -- Tx Clocking
          pgpTxReset       => pgpTxRst(0),
+         pgpTxRecClk      => open,
          pgpTxClk         => pgpTxClk(0),
+         pgpTxMmcmReset   => open,
+         pgpTxMmcmLocked  => '1',
          -- Rx clocking
          pgpRxReset       => pgpRxRst(0),
-         pgpRxRecClk      => pgpRxClk(0),
+         pgpRxRecClk      => open,
          pgpRxClk         => pgpRxClk(0),
          pgpRxMmcmReset   => open,
          pgpRxMmcmLocked  => '1',
