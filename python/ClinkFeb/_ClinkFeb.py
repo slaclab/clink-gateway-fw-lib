@@ -76,10 +76,9 @@ class ClinkFeb(pr.Device):
             ))
 
             for i in range(4):
-                self.add(xceiver.Sff8472(
+                self.add(xceiver.Sfp(
                     name         = f'Sfp[{i}]',
                     offset       = 0x00004000+i*0x00001000,
-                    diagnostics  = True,
                     expand       = False,
                     enabled      = False, # enabled=False because I2C are slow transactions and might "log jam" register transaction pipeline
                 ))

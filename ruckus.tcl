@@ -9,7 +9,7 @@ if { [VersionCheck 2018.2 ] < 0 } {
 # Check for submodule tagging
 if { [info exists ::env(OVERRIDE_SUBMODULE_LOCKS)] != 1 || $::env(OVERRIDE_SUBMODULE_LOCKS) == 0 } {
    if { [SubmoduleCheck {ruckus} {2.9.2}  ] < 0 } {exit -1}
-   if { [SubmoduleCheck {surf}   {2.13.0} ] < 0 } {exit -1}
+   if { [SubmoduleCheck {surf}   {2.20.0} ] < 0 } {exit -1}
 } else {
    puts "\n\n*********************************************************"
    puts "OVERRIDE_SUBMODULE_LOCKS != 0"
