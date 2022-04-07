@@ -114,6 +114,11 @@ architecture mapping of PgpPhy is
    signal pgpRefClkDiv2    : sl;
    signal pgpRefClkDiv2Rst : sl;
 
+   signal pgpRxRecClk     : sl;
+   signal pgpRxReset      : sl;
+   signal pgpRxMmcmReset  : sl;
+   signal pgpRxMmcmLocked : sl;
+
    signal sysClk : sl;
    signal sysRst : sl;
 
@@ -181,9 +186,36 @@ begin
          rstOut(1) => sysRst,
          rstOut(2) => pgpTxRst(0));
 
-   -- Using Variable Latency PGP2b
-   pgpRxClk(0) <= pgpTxClk(0);
-   pgpRxRst(0) <= pgpTxRst(0);
+   U_PLL : entity surf.ClockManager7
+      generic map(
+         TPD_G              => TPD_G,
+         SIMULATION_G       => SIMULATION_G,
+         TYPE_G             => "PLL",
+         INPUT_BUFG_G       => false,
+         FB_BUFG_G          => true,
+         RST_IN_POLARITY_G  => '1',
+         NUM_CLOCKS_G       => 1,
+         -- MMCM attributes
+         CLKIN_PERIOD_G     => 6.4,  -- 156.25 MHz
+         CLKFBOUT_MULT_G    => 8,    -- VCO = 1250MHz
+         CLKOUT0_DIVIDE_G   => 8)    -- 156.25 MHz = 1250MHz/8
+      port map(
+         clkIn     => pgpRxRecClk,
+         rstIn     => pgpRxMmcmReset,
+         clkOut(0) => pgpRxClk(0),
+         rstOut(0) => pgpRxRst(0),
+         locked    => pgpRxMmcmLocked);
+
+   U_pgpRxReset : entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G          => TPD_G,
+         IN_POLARITY_G  => '1',
+         OUT_POLARITY_G => '1',
+         PULSE_WIDTH_G  => 100)
+      port map (
+         clk     => pgpTxClk(0),
+         dataIn  => pgpRxRst(0),
+         dataOut => pgpRxReset);
 
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
@@ -244,11 +276,11 @@ begin
          pgpTxMmcmReset   => open,
          pgpTxMmcmLocked  => '1',
          -- Rx clocking
-         pgpRxReset       => pgpRxRst(0),
-         pgpRxRecClk      => open,
+         pgpRxReset       => pgpRxReset,
+         pgpRxRecClk      => pgpRxRecClk,
          pgpRxClk         => pgpRxClk(0),
-         pgpRxMmcmReset   => open,
-         pgpRxMmcmLocked  => '1',
+         pgpRxMmcmReset   => pgpRxMmcmReset,
+         pgpRxMmcmLocked  => pgpRxMmcmLocked,
          -- Non VC TX Signals
          pgpTxIn          => pgp2bTxIn,
          pgpTxOut         => pgp2bTxOut,
