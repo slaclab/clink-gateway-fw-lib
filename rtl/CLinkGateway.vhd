@@ -80,7 +80,7 @@ end CLinkGateway;
 
 architecture mapping of CLinkGateway is
 
-   constant AXIL_CLK_FREQ_C : real := 125.0E+6;  -- units of Hz
+   constant AXIL_CLK_FREQ_C : real := 104.167E+6;  -- units of Hz
 
    constant NUM_AXIL_MASTERS_C : natural := 5;
 
