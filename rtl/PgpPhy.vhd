@@ -31,7 +31,7 @@ entity PgpPhy is
    generic (
       TPD_G           : time    := 1 ns;
       SIMULATION_G    : boolean := false;
-      AXI_CLK_FREQ_G  : real    := 125.0E+6;  -- units of Hz
+      AXI_CLK_FREQ_G  : real    := 104.167E+6;  -- units of Hz
       PHY_BASE_ADDR_G : slv(31 downto 0));
    port (
       -- AXI-Lite Interface (axilClk domain)
@@ -174,7 +174,7 @@ begin
          CLKIN_PERIOD_G     => 6.4,     -- 156.25 MHz
          CLKFBOUT_MULT_F_G  => 8.00,    -- VCO = 1250MHz
          CLKOUT0_DIVIDE_F_G => 6.25,    -- 200 MHz = 1250MHz/6.25
-         CLKOUT1_DIVIDE_G   => 10,      -- 125 MHz = 1250MHz/10
+         CLKOUT1_DIVIDE_G   => 12,      -- 104.167 MHz = 1250MHz/12
          CLKOUT2_DIVIDE_G   => 8)       -- 156.25 MHz = 1250MHz/8
       port map(
          clkIn     => pgpRefClkDiv2,
