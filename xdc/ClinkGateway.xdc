@@ -219,9 +219,10 @@ set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 } [get_ports { tempAler
 create_clock -name pgpClkP -period 3.200 [get_ports { gtClkP[0] }]
 create_clock -name evrClkP -period 2.691 [get_ports { gtClkP[1] }]
 
-create_clock -name cbl0Half1Clk0 -period 10 [get_ports {cbl0Half1P[0]}]
-create_clock -name cbl1Half0Clk0 -period 10 [get_ports {cbl1Half0P[0]}]
-create_clock -name cbl1Half1Clk0 -period 10 [get_ports {cbl1Half1P[0]}]
+# Make timing up to 90.9 MHz CLINK Clock (1/11ns)
+create_clock -name cbl0Half1Clk0 -period 11 [get_ports {cbl0Half1P[0]}]
+create_clock -name cbl1Half0Clk0 -period 11 [get_ports {cbl1Half0P[0]}]
+create_clock -name cbl1Half1Clk0 -period 11 [get_ports {cbl1Half1P[0]}]
 
 create_generated_clock -name dnaClk     [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}]
 create_generated_clock -name dnaClkInv  [get_pins {U_Core/U_FpgaSystem/U_AxiVersion/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}]
