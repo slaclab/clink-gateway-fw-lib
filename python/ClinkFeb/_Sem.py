@@ -110,9 +110,8 @@ class Sem(pr.Device):
                 bitSize = 12,
                 bitOffset = 0,
                 base = pr.UInt,
+                pollInterval=5,
                 disp = '{:d}'))
-
-        self.CorrectionCount.pollInterval = 5
 
         self.add(pr.RemoteCommand(
             name="InjectStrobe",
